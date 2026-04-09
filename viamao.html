@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Viamão - Controle de Cirurgias</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js"></script>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f5;color:#333}.container{max-width:100%;margin:0;padding:0}.header{background:linear-gradient(135deg,#87CEEB 0%,#5DADE2 100%);color:white;padding:15px;text-align:center}.header h1{font-size:20px;margin-bottom:5px}.header p{font-size:12px;opacity:.95}.tabs-nav{display:flex;background:white;border-bottom:2px solid #ddd;overflow-x:auto;position:sticky;top:0;z-index:100}.tab-link{flex:1;min-width:80px;padding:12px 8px;background:white;border:none;border-bottom:3px solid white;cursor:pointer;font-size:12px;font-weight:600;color:#666;text-align:center;transition:all .3s}.tab-link:active{background:#f9f9f9}.tab-link.active{color:#87CEEB;border-bottom-color:#87CEEB;background:#f0f8ff}.content{padding:15px;min-height:calc(100vh - 200px)}.tab-pane{display:none}.tab-pane.active{display:block}.card{background:white;padding:15px;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,.1);margin-bottom:15px}.card h2{color:#1F4E78;font-size:14px;margin-bottom:12px;border-bottom:2px solid #87CEEB;padding-bottom:8px}.form-group{margin-bottom:12px}.form-group label{display:block;font-weight:500;font-size:12px;margin-bottom:6px;color:#333}input[type="text"],input[type="date"],textarea,select{width:100%;padding:10px;border:2px solid #ddd;border-radius:6px;font-size:14px;font-family:inherit}input[type="text"]:focus,input[type="date"]:focus,textarea:focus,select:focus{outline:0;border-color:#87CEEB}textarea{resize:vertical;min-height:70px}.radio-group{display:flex;flex-direction:column;gap:8px}.radio-item{display:flex;align-items:center;padding:8px;border:2px solid #ddd;border-radius:6px;cursor:pointer}.radio-item input[type="radio"]{margin-right:10px;cursor:pointer;width:18px;height:18px}.radio-item label{margin:0;cursor:pointer;flex:1}.file-btn{display:block;width:100%;padding:10px;background:#87CEEB;color:white;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-size:12px;margin-bottom:10px}input[type="file"]{display:none}.btn-container{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:15px}.btn{padding:12px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;text-transform:uppercase}.btn-submit{background:#87CEEB;color:white}.btn-reset{background:#f0f0f0;color:#333}.btn-export{background:#4CAF50;color:white;grid-column:1 / -1}.metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:15px}.metric-box{background:#f8f9fa;padding:12px;border-radius:6px;border-left:4px solid #87CEEB;text-align:center}.metric-number{font-size:24px;font-weight:600;color:#87CEEB}.metric-label{font-size:11px;color:#666;margin-top:4px}.patient-list{display:flex;flex-direction:column;gap:8px}.patient-card{background:#f8f9fa;padding:10px;border-radius:6px;border-left:4px solid #87CEEB}.patient-name{font-weight:600;font-size:13px;margin-bottom:4px}.patient-detail{font-size:11px;color:#666}.badge{display:inline-block;padding:2px 6px;background:#87CEEB;color:white;border-radius:3px;font-size:10px;margin-right:4px;margin-bottom:2px}.success-msg{display:none;background:#d4edda;color:#155724;padding:10px;border-radius:6px;margin-bottom:10px;font-size:12px;border-left:4px solid #28a745}.success-msg.show{display:block}.empty-state{text-align:center;padding:30px 15px;color:#999;font-size:13px}.chart-container{position:relative;height:250px;margin-bottom:15px}.required{color:#FFC107}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 Viamão</h1>
+            <p>Controle de Cirurgias</p>
+        </div>
+
+        <div class="tabs-nav">
+            <button class="tab-link active" onclick="abreAba(event, 'aba1')">📝 Registrar</button>
+            <button class="tab-link" onclick="abreAba(event, 'aba2')">📊 Dashboard</button>
+            <button class="tab-link" onclick="abreAba(event, 'aba3')">📈 Gráficos</button>
+            <button class="tab-link" onclick="abreAba(event, 'aba4')">👥 Pacientes</button>
+        </div>
+
+        <div class="content">
+            <div id="aba1" class="tab-pane active">
+                <div class="card">
+                    <h2>Registrar Nova Cirurgia</h2>
+                    <div class="success-msg" id="msgSucesso">✓ Cirurgia registrada com sucesso!</div>
+
+                    <form id="formulario" onsubmit="registrarCirurgia(event)">
+                        <div class="form-group">
+                            <label>Nome Completo <span class="required">*</span></label>
+                            <input type="text" id="inputNome" required placeholder="Digite o nome">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Data da Cirurgia <span class="required">*</span></label>
+                            <input type="date" id="inputData" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Clínica <span class="required">*</span></label>
+                            <div class="radio-group">
+                                <div class="radio-item">
+                                    <input type="radio" id="opt1" name="clinica" value="Viamão" required>
+                                    <label for="opt1">Viamão</label>
+                                </div>
+                                <div class="radio-item">
+                                    <input type="radio" id="opt2" name="clinica" value="Esteio">
+                                    <label for="opt2">Esteio</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Procedimento <span class="required">*</span></label>
+                            <div class="radio-group">
+                                <div class="radio-item">
+                                    <input type="radio" id="proc1" name="procedimento" value="Levantamento de seio" required>
+                                    <label for="proc1">Levantamento de seio</label>
+                                </div>
+                                <div class="radio-item">
+                                    <input type="radio" id="proc2" name="procedimento" value="Implante">
+                                    <label for="proc2">Implante</label>
+                                </div>
+                                <div class="radio-item">
+                                    <input type="radio" id="proc3" name="procedimento" value="Extração + Implante">
+                                    <label for="proc3">Extração + Implante</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Tipo de Cirurgia</label>
+                            <div class="radio-group">
+                                <div class="radio-item">
+                                    <input type="radio" id="tipo1" name="tipo" value="Normal" checked>
+                                    <label for="tipo1">Normal</label>
+                                </div>
+                                <div class="radio-item">
+                                    <input type="radio" id="tipo2" name="tipo" value="Perda">
+                                    <label for="tipo2">Perda</label>
+                                </div>
+                                <div class="radio-item">
+                                    <input type="radio" id="tipo3" name="tipo" value="Repetição">
+                                    <label for="tipo3">Repetição</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Observações</label>
+                            <textarea id="inputObs" placeholder="Descreva observações..."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Foto</label>
+                            <input type="file" id="inputFoto" accept="image/*">
+                            <button type="button" class="file-btn" onclick="document.getElementById('inputFoto').click()">📷 Selecionar Foto</button>
+                        </div>
+
+                        <div class="btn-container">
+                            <button type="submit" class="btn btn-submit">Registrar</button>
+                            <button type="reset" class="btn btn-reset">Limpar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div id="aba2" class="tab-pane">
+                <div class="card">
+                    <h2>Resumo do Mês</h2>
+                    <div class="metrics">
+                        <div class="metric-box">
+                            <div class="metric-number" id="totalCir">0</div>
+                            <div class="metric-label">Total</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="metric-number" id="normalCir">0</div>
+                            <div class="metric-label">Normais</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="metric-number" id="perdaCir">0</div>
+                            <div class="metric-label">Perdas</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="metric-number" id="repCir">0</div>
+                            <div class="metric-label">Repetições</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-export" onclick="exportarExcel()">📊 Exportar Excel</button>
+                </div>
+            </div>
+
+            <div id="aba3" class="tab-pane">
+                <div class="card">
+                    <h2>Tendências</h2>
+                    <div class="chart-container">
+                        <canvas id="grafico1"></canvas>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Procedimentos</h2>
+                    <div class="chart-container">
+                        <canvas id="grafico2"></canvas>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Análise de Perdas</h2>
+                    <div class="chart-container">
+                        <canvas id="grafico3"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div id="aba4" class="tab-pane">
+                <div class="card">
+                    <h2>Pacientes Registrados</h2>
+                    <div class="patient-list" id="listaPacientes">
+                        <div class="empty-state">Nenhuma cirurgia registrada</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let cirurgias = [];
+        let graficos = {};
+
+        function getMes() {
+            const d = new Date();
+            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+        }
+
+        function carregarDados() {
+            try {
+                const chave = 'cirurgias_' + getMes();
+                const dados = localStorage.getItem(chave);
+                if (dados) {
+                    cirurgias = JSON.parse(dados);
+                    atualizarTudo();
+                }
+            } catch(e) {
+                console.log('Erro ao carregar:', e);
+            }
+        }
+
+        function salvarDados() {
+            try {
+                const chave = 'cirurgias_' + getMes();
+                localStorage.setItem(chave, JSON.stringify(cirurgias));
+            } catch(e) {
+                console.log('Erro ao salvar:', e);
+            }
+        }
+
+        function abreAba(event, abaId) {
+            event.preventDefault();
+            document.querySelectorAll('.tab-pane').forEach(aba => aba.classList.remove('active'));
+            document.querySelectorAll('.tab-link').forEach(botao => botao.classList.remove('active'));
+            document.getElementById(abaId).classList.add('active');
+            event.target.classList.add('active');
+            if (abaId === 'aba3') {
+                setTimeout(() => atualizarGraficos(), 100);
+            }
+        }
+
+        function registrarCirurgia(event) {
+            event.preventDefault();
+            const nova = {
+                nome: document.getElementById('inputNome').value,
+                data: document.getElementById('inputData').value,
+                clinica: document.querySelector('input[name="clinica"]:checked').value,
+                procedimento: document.querySelector('input[name="procedimento"]:checked').value,
+                tipo: document.querySelector('input[name="tipo"]:checked').value,
+                obs: document.getElementById('inputObs').value,
+                foto: document.getElementById('inputFoto').files[0]?.name || null
+            };
+            cirurgias.push(nova);
+            salvarDados();
+            atualizarTudo();
+            document.getElementById('msgSucesso').classList.add('show');
+            setTimeout(() => document.getElementById('msgSucesso').classList.remove('show'), 2500);
+            document.getElementById('formulario').reset();
+        }
+
+        function atualizarTudo() {
+            atualizarMetricas();
+            atualizarPacientes();
+        }
+
+        function atualizarMetricas() {
+            const total = cirurgias.length;
+            const normal = cirurgias.filter(c => c.tipo === 'Normal').length;
+            const perda = cirurgias.filter(c => c.tipo === 'Perda').length;
+            const rep = cirurgias.filter(c => c.tipo === 'Repetição').length;
+            document.getElementById('totalCir').textContent = total;
+            document.getElementById('normalCir').textContent = normal;
+            document.getElementById('perdaCir').textContent = perda;
+            document.getElementById('repCir').textContent = rep;
+        }
+
+        function atualizarPacientes() {
+            const lista = document.getElementById('listaPacientes');
+            if (cirurgias.length === 0) {
+                lista.innerHTML = '<div class="empty-state">Nenhuma cirurgia registrada</div>';
+                return;
+            }
+            lista.innerHTML = cirurgias.map(c => {
+                const data = new Date(c.data).toLocaleDateString('pt-BR');
+                return `<div class="patient-card"><div class="patient-name">${c.nome}</div><div class="patient-detail"><span class="badge">${data}</span><span class="badge">${c.clinica}</span><span class="badge">${c.procedimento}</span><span class="badge">${c.tipo}</span></div></div>`;
+            }).join('');
+        }
+
+        function atualizarGraficos() {
+            criarGrafico1();
+            criarGrafico2();
+            criarGrafico3();
+        }
+
+        function criarGrafico1() {
+            const ctx = document.getElementById('grafico1');
+            if (!ctx) return;
+            const dados = {};
+            cirurgias.forEach(c => {
+                const d = new Date(c.data).toLocaleDateString('pt-BR');
+                dados[d] = (dados[d] || 0) + 1;
+            });
+            const labels = Object.keys(dados).sort();
+            const valores = labels.map(l => dados[l]);
+            if (graficos.g1) graficos.g1.destroy();
+            graficos.g1 = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels.length > 0 ? labels : ['Sem dados'],
+                    datasets: [{
+                        label: 'Cirurgias',
+                        data: valores.length > 0 ? valores : [0],
+                        borderColor: '#87CEEB',
+                        backgroundColor: 'rgba(135, 206, 235, 0.1)',
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {responsive: true, maintainAspectRatio: false, plugins: {legend: {display: false}}}
+            });
+        }
+
+        function criarGrafico2() {
+            const ctx = document.getElementById('grafico2');
+            if (!ctx) return;
+            const levant = cirurgias.filter(c => c.procedimento === 'Levantamento de seio').length;
+            const impl = cirurgias.filter(c => c.procedimento === 'Implante').length;
+            const extr = cirurgias.filter(c => c.procedimento === 'Extração + Implante').length;
+            if (graficos.g2) graficos.g2.destroy();
+            graficos.g2 = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Levantamento', 'Implante', 'Extração'],
+                    datasets: [{data: [levant, impl, extr], backgroundColor: ['#87CEEB', '#4CAF50', '#FF6B6B']}]
+                },
+                options: {responsive: true, maintainAspectRatio: false}
+            });
+        }
+
+        function criarGrafico3() {
+            const ctx = document.getElementById('grafico3');
+            if (!ctx) return;
+            const normal = cirurgias.filter(c => c.tipo === 'Normal').length;
+            const perda = cirurgias.filter(c => c.tipo === 'Perda').length;
+            const rep = cirurgias.filter(c => c.tipo === 'Repetição').length;
+            if (graficos.g3) graficos.g3.destroy();
+            graficos.g3 = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Normal', 'Perda', 'Repetição'],
+                    datasets: [{label: 'Quantidade', data: [normal, perda, rep], backgroundColor: ['#4CAF50', '#f44336', '#ff9800']}]
+                },
+                options: {indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: {legend: {display: false}}}
+            });
+        }
+
+        function exportarExcel() {
+            if (cirurgias.length === 0) {
+                alert('Nenhuma cirurgia para exportar');
+                return;
+            }
+            const dados = cirurgias.map(c => ({Nome: c.nome, Data: c.data, Clínica: c.clinica, Procedimento: c.procedimento, Tipo: c.tipo, Observações: c.obs || ''}));
+            const planilha = XLSX.utils.json_to_sheet(dados);
+            const livro = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(livro, planilha, 'Cirurgias');
+            XLSX.writeFile(livro, 'Cirurgias_' + getMes() + '.xlsx');
+        }
+
+        carregarDados();
+    </script>
+</body>
+</html>
