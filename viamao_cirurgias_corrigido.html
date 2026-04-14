@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Controle de Cirurgia</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js"></script>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f5;color:#333}
+        .container{max-width:100%;margin:0;padding:0}
+        .header{background:linear-gradient(135deg,#87CEEB 0%,#5DADE2 100%);color:white;padding:15px;text-align:center}
+        .header h1{font-size:20px;margin-bottom:5px}
+        .header p{font-size:12px;opacity:.95}
+        .status{font-size:11px;margin-top:8px;color:#4CAF50}
+        .tabs-nav{display:flex;background:white;border-bottom:2px solid #ddd;overflow-x:auto;position:sticky;top:0;z-index:100}
+        .tab-link{flex:1;min-width:70px;padding:12px 8px;background:white;border:none;border-bottom:3px solid white;cursor:pointer;font-size:11px;font-weight:600;color:#666;text-align:center;transition:all .3s}
+        .tab-link.active{color:#87CEEB;border-bottom-color:#87CEEB;background:#f0f8ff}
+        .content{padding:15px;min-height:calc(100vh - 200px)}
+        .tab-pane{display:none}
+        .tab-pane.active{display:block}
+        .card{background:white;padding:15px;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,.1);margin-bottom:15px}
+        .card h2{color:#1F4E78;font-size:14px;margin-bottom:12px;border-bottom:2px solid #87CEEB;padding-bottom:8px}
+        .form-group{margin-bottom:12px}
+        .form-group label{display:block;font-weight:500;font-size:12px;margin-bottom:6px;color:#333}
+        input[type="text"],input[type="number"],input[type="date"],textarea,select{width:100%;padding:10px;border:2px solid #ddd;border-radius:6px;font-size:14px;font-family:inherit}
+        input[type="text"]:focus,input[type="number"]:focus,input[type="date"]:focus,textarea:focus,select:focus{outline:0;border-color:#87CEEB}
+        textarea{resize:vertical;min-height:70px}
+        .radio-group{display:flex;flex-direction:column;gap:8px}
+        .radio-item{display:flex;align-items:center;padding:8px;border:2px solid #ddd;border-radius:6px;cursor:pointer}
+        .radio-item input[type="radio"]{margin-right:10px;cursor:pointer;width:18px;height:18px}
+        .radio-item label{margin:0;cursor:pointer;flex:1}
+        .btn-container{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:15px}
+        .btn{padding:12px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;text-transform:uppercase}
+        .btn-submit{background:#87CEEB;color:white}
+        .btn-reset{background:#f0f0f0;color:#333}
+        .btn-export{background:#4CAF50;color:white;grid-column:1 / -1}
+        .btn-small{padding:8px 12px;font-size:11px}
+        .metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:15px}
+        .metric-box{background:#f8f9fa;padding:12px;border-radius:6px;border-left:4px solid #87CEEB;text-align:center}
+        .metric-number{font-size:24px;font-weight:600;color:#87CEEB}
+        .metric-label{font-size:11px;color:#666;margin-top:4px}
+        .implante-item{display:flex;gap:8px;margin-bottom:8px}
+        .implante-item select{flex:1}
+        .implante-item button{width:40px}
+        .patient-list{display:flex;flex-direction:column;gap:8px}
+        .patient-card{background:#f8f9fa;padding:10px;border-radius:6px;border-left:4px solid #87CEEB}
+        .patient-name{font-weight:600;font-size:13px;margin-bottom:4px}
+        .patient-detail{font-size:11px;color:#666}
+        .badge{display:inline-block;padding:2px 6px;background:#87CEEB;color:white;border-radius:3px;font-size:10px;margin-right:4px;margin-bottom:2px}
+        .success-msg{display:none;background:#d4edda;color:#155724;padding:10px;border-radius:6px;margin-bottom:10px;font-size:12px;border-left:4px solid #28a745}
+        .success-msg.show{display:block}
+        .empty-state{text-align:center;padding:30px 15px;color:#999;font-size:13px}
+        .chart-container{position:relative;height:250px;margin-bottom:15px}
+        .required{color:#FFC107}
+        .estoque-item{background:#f8f9fa;padding:10px;border-radius:6px;border-left:4px solid #87CEEB;margin-bottom:8px}
+        .estoque-tamanho{font-weight:600;color:#333}
+        .estoque-qtd{font-size:14px;color:#87CEEB;font-weight:600;margin-top:4px}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 Controle de Cirurgia</h1>
+            <p>Sistema de Controle de Cirurgias + Estoque de Implantes</p>
+            <div class="status" id="statusConexao">🟢 Conectado ao banco de dados</div>
+        </div>
+
+        <div class="tabs-nav" id="tabsNav">
+            <button class="tab-link active" data-tab="aba1">📝 Registrar</button>
+            <button class="tab-link" data-tab="aba2">📊 Dashboard</button>
+            <button class="tab-link" data-tab="aba3">📦 Estoque</button>
+            <button class="tab-link" data-tab="aba4">📈 Relatórios</button>
+            <button class="tab-link" data-tab="aba5">📅 Comparativo</button>
+            <button class="tab-link" data-tab="aba6">👥 Pacientes</button>
+        </div>
+
+        <div class="content">
+            <!-- ABA 1: REGISTRAR -->
+            <div id="aba1" class="tab-pane active">
+                <div class="card">
+                    <h2>Registrar Nova Cirurgia</h2>
+                    <div class="success-msg" id="msgSucesso">✓ Cirurgia registrada com sucesso!</div>
+
+                    <form id="formulario" onsubmit="registrarCirurgia(event)">
+                        <div class="form-group">
+                            <label>Nome Completo <span class="required">*</span></label>
+                            <input type="text" id="inputNome" required placeholder="Digite o nome">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Data da Cirurgia <span class="required">*</span></label>
+                            <input type="date" id="inputData" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Clínica <span class="required">*</span></label>
+                            <div class="radio-group">
+                                <div class="radio-item">
+                                    <input type="radio" id="opt1" name="clinica" value="Viamão" required>
+                                    <label for="opt1">Viamão</label>
+                                </div>
+                                <div class="radio-item">
+                                    <input type="radio" id="opt2" name="clinica" value="Esteio">
+                                    <label for="opt2">Esteio</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Procedimento <span class="required">*</span></label>
+                            <div class="radio-group">
+                                <div class="radio-item">
+                                    <input type="radio" id="proc1" name="procedimento" value="Levantamento de seio" required>
+                                    <label for="proc1">Levantamento de seio</label>
+                                </div>
+                                <div class="radio-item">
+                                    <input type="radio" id="proc2" name="procedimento" value="Implante">
+                                    <label for="proc2">Implante</label>
+                                </div>
+                                <div class="radio-item">
+                                    <input type="radio" id="proc3" name="procedimento" value="Extração + Implante">
+                                    <label for="proc3">Extração + Implante</label>
+                                </div>
+                                <div class="radio-item">
+                                    <input type="radio" id="proc4" name="procedimento" value="Implante + Levantamento de seio + Exo">
+                                    <label for="proc4">Implante + Levantamento de seio + Exo</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Tipo de Cirurgia</label>
+                            <div class="radio-group">
+                                <div class="radio-item">
+                                    <input type="radio" id="tipo1" name="tipo" value="Normal" checked>
+                                    <label for="tipo1">Normal</label>
+                                </div>
+                                <div class="radio-item">
+                                    <input type="radio" id="tipo2" name="tipo" value="Perda">
+                                    <label for="tipo2">Perda</label>
+                                </div>
+                                <div class="radio-item">
+                                    <input type="radio" id="tipo3" name="tipo" value="Repetição">
+                                    <label for="tipo3">Repetição</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Implantes Utilizados (se aplicável)</label>
+                            <div id="implantesContainer">
+                                <div class="implante-item">
+                                    <select class="selectImplante">
+                                        <option value="">-- Selecione --</option>
+                                        <option value="3,5 x 7">3,5 x 7</option>
+                                        <option value="3,5 x 8">3,5 x 8</option>
+                                        <option value="3,5 x 10">3,5 x 10</option>
+                                        <option value="3,5 x 11,5">3,5 x 11,5</option>
+                                        <option value="3,5 x 13">3,5 x 13</option>
+                                        <option value="3,5 x 16">3,5 x 16</option>
+                                        <option value="3,75 x 7">3,75 x 7</option>
+                                        <option value="3,75 x 9">3,75 x 9</option>
+                                        <option value="3,75 x 11">3,75 x 11</option>
+                                        <option value="4 x 7">4 x 7</option>
+                                        <option value="4 x 9">4 x 9</option>
+                                        <option value="4,3 x 8">4,3 x 8</option>
+                                        <option value="4,3 x 10">4,3 x 10</option>
+                                        <option value="4,3 x 11,5">4,3 x 11,5</option>
+                                        <option value="4,3 x 13">4,3 x 13</option>
+                                    </select>
+                                    <button type="button" class="btn btn-small" onclick="removerImplante(this)" style="display:none;">❌</button>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-small" onclick="adicionarImplante()" style="margin-top:10px;width:100%;">➕ Adicionar Implante</button>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Observações</label>
+                            <textarea id="inputObs" placeholder="Descreva observações..."></textarea>
+                        </div>
+
+                        <div class="btn-container">
+                            <button type="submit" class="btn btn-submit">Registrar</button>
+                            <button type="reset" class="btn btn-reset">Limpar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- ABA 2: DASHBOARD -->
+            <div id="aba2" class="tab-pane">
+                <div class="card">
+                    <h2>Resumo do Mês</h2>
+                    <div class="metrics">
+                        <div class="metric-box">
+                            <div class="metric-number" id="totalCir">0</div>
+                            <div class="metric-label">Total</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="metric-number" id="normalCir">0</div>
+                            <div class="metric-label">Normais</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="metric-number" id="perdaCir">0</div>
+                            <div class="metric-label">Perdas</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="metric-number" id="repCir">0</div>
+                            <div class="metric-label">Repetições</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-export" onclick="exportarExcel()">📊 Exportar Excel</button>
+                </div>
+            </div>
+
+            <!-- ABA 3: ESTOQUE -->
+            <div id="aba3" class="tab-pane">
+                <div class="card">
+                    <h2>Estoque de Implantes</h2>
+                    <div id="estoqueContainer"></div>
+                </div>
+
+                <div class="card">
+                    <h2>Adicionar Implante ao Estoque</h2>
+                    <form id="formEstoque" onsubmit="adicionarEstoque(event)">
+                        <div class="form-group">
+                            <label>Tamanho do Implante <span class="required">*</span></label>
+                            <input type="text" id="tamanhoImplante" placeholder="Ex: 3,5 x 10" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Quantidade <span class="required">*</span></label>
+                            <input type="number" id="qtdImplante" min="1" placeholder="Ex: 5" required>
+                        </div>
+
+                        <div class="btn-container">
+                            <button type="submit" class="btn btn-submit">Adicionar ao Estoque</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- ABA 4: RELATÓRIOS -->
+            <div id="aba4" class="tab-pane">
+                <div class="card">
+                    <h2>Análise de Consumo de Implantes</h2>
+                    <div class="chart-container">
+                        <canvas id="graficoConsumo"></canvas>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Consumo por Tamanho (Este Mês)</h2>
+                    <div id="relatorioConsumo"></div>
+                </div>
+            </div>
+
+            <!-- ABA 5: COMPARATIVO -->
+            <div id="aba5" class="tab-pane">
+                <div class="card">
+                    <h2>Comparativo de Consumo Entre Meses</h2>
+                    
+                    <div class="form-group">
+                        <label>Período</label>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                            <div>
+                                <label style="font-size:11px;">Mês Inicial</label>
+                                <input type="month" id="mesInicial">
+                            </div>
+                            <div>
+                                <label style="font-size:11px;">Mês Final</label>
+                                <input type="month" id="mesFinal">
+                            </div>
+                        </div>
+                        <button class="btn btn-submit" onclick="gerarComparativo()" style="width:100%;margin-top:10px;">🔍 Gerar Comparativo</button>
+                    </div>
+
+                    <div class="chart-container" style="margin-top:20px;">
+                        <canvas id="graficoComparativo"></canvas>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Análise por Tamanho (Período)</h2>
+                    <div id="tabelaComparativo"></div>
+                </div>
+            </div>
+
+            <!-- ABA 6: PACIENTES -->
+            <div id="aba6" class="tab-pane">
+                <div class="card">
+                    <h2>Pacientes Registrados</h2>
+                    <div class="patient-list" id="listaPacientes">
+                        <div class="empty-state">Carregando...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let cirurgias = [];
+        let estoque = {};
+        let graficos = {};
+        let db = null;
+
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyCqr-0xO-BjGa8cgBvIhglQkbCBwGEHAIo",
+            authDomain: "viamao-cirurgias.firebaseapp.com",
+            projectId: "viamao-cirurgias",
+            databaseURL: "https://viamao-cirurgias-default-rtdb.europe-west1.firebasedatabase.app",
+            storageBucket: "viamao-cirurgias.firebasestorage.app",
+            messagingSenderId: "177370665539",
+            appId: "1:177370665539:web:96d5a52efc3595c93f7af6"
+        };
+
+        try {
+            const app = firebase.initializeApp(firebaseConfig);
+            db = firebase.database();
+            inicializarBancoDados();
+        } catch(e) {
+            console.log('Firebase error:', e);
+        }
+
+        function inicializarBancoDados() {
+            if (!db) return;
+            
+            const mesRef = db.ref('cirurgias/' + getMes());
+            mesRef.on('value', (snapshot) => {
+                cirurgias = snapshot.exists() ? Object.values(snapshot.val()) : [];
+                atualizarTudo();
+            });
+
+            const estoqueRef = db.ref('estoque');
+            estoqueRef.on('value', (snapshot) => {
+                estoque = snapshot.exists() ? snapshot.val() : {};
+                atualizarEstoque();
+            });
+        }
+
+        // SISTEMA DE ABAS
+        document.querySelectorAll('.tab-link').forEach(botao => {
+            botao.addEventListener('click', function(e) {
+                e.preventDefault();
+                const abaId = this.getAttribute('data-tab');
+                mostrarAba(abaId);
+            });
+        });
+
+        function mostrarAba(abaId) {
+            // Ocultar todas as abas
+            document.querySelectorAll('.tab-pane').forEach(aba => {
+                aba.classList.remove('active');
+            });
+
+            // Desativar todos os botões
+            document.querySelectorAll('.tab-link').forEach(botao => {
+                botao.classList.remove('active');
+            });
+
+            // Mostrar aba selecionada
+            document.getElementById(abaId).classList.add('active');
+
+            // Ativar botão correspondente
+            document.querySelector(`[data-tab="${abaId}"]`).classList.add('active');
+
+            // Atualizar dados específicos
+            if (abaId === 'aba4') setTimeout(() => atualizarRelatorios(), 100);
+            if (abaId === 'aba5') setTimeout(() => inicializarFiltros(), 100);
+        }
+
+        function getMes() {
+            const d = new Date();
+            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+        }
+
+        function registrarCirurgia(event) {
+            event.preventDefault();
+            
+            const selectores = document.querySelectorAll('.selectImplante');
+            const implantes = [];
+            selectores.forEach(select => {
+                if (select.value) implantes.push(select.value);
+            });
+
+            const nova = {
+                nome: document.getElementById('inputNome').value,
+                data: document.getElementById('inputData').value,
+                clinica: document.querySelector('input[name="clinica"]:checked').value,
+                procedimento: document.querySelector('input[name="procedimento"]:checked').value,
+                tipo: document.querySelector('input[name="tipo"]:checked').value,
+                implantes: implantes,
+                obs: document.getElementById('inputObs').value,
+                timestamp: new Date().toISOString()
+            };
+
+            if (db) {
+                const mesRef = db.ref('cirurgias/' + getMes());
+                const novoId = mesRef.push().key;
+                mesRef.child(novoId).set(nova).then(() => {
+                    implantes.forEach(impl => {
+                        const estoqueRef = db.ref('estoque/' + impl);
+                        estoqueRef.once('value', snap => {
+                            const qtd = snap.val() || 0;
+                            if (qtd > 0) estoqueRef.set(qtd - 1);
+                        });
+                    });
+
+                    document.getElementById('msgSucesso').classList.add('show');
+                    setTimeout(() => document.getElementById('msgSucesso').classList.remove('show'), 2500);
+                    document.getElementById('formulario').reset();
+                    document.getElementById('implantesContainer').innerHTML = '<div class="implante-item"><select class="selectImplante"><option value="">-- Selecione --</option><option value="3,5 x 7">3,5 x 7</option><option value="3,5 x 8">3,5 x 8</option><option value="3,5 x 10">3,5 x 10</option><option value="3,5 x 11,5">3,5 x 11,5</option><option value="3,5 x 13">3,5 x 13</option><option value="3,5 x 16">3,5 x 16</option><option value="3,75 x 7">3,75 x 7</option><option value="3,75 x 9">3,75 x 9</option><option value="3,75 x 11">3,75 x 11</option><option value="4 x 7">4 x 7</option><option value="4 x 9">4 x 9</option><option value="4,3 x 8">4,3 x 8</option><option value="4,3 x 10">4,3 x 10</option><option value="4,3 x 11,5">4,3 x 11,5</option><option value="4,3 x 13">4,3 x 13</option></select><button type="button" class="btn btn-small" onclick="removerImplante(this)" style="display:none;">❌</button></div>';
+                });
+            }
+        }
+
+        function adicionarImplante() {
+            const container = document.getElementById('implantesContainer');
+            const novoItem = document.createElement('div');
+            novoItem.className = 'implante-item';
+            novoItem.innerHTML = '<select class="selectImplante"><option value="">-- Selecione --</option><option value="3,5 x 7">3,5 x 7</option><option value="3,5 x 8">3,5 x 8</option><option value="3,5 x 10">3,5 x 10</option><option value="3,5 x 11,5">3,5 x 11,5</option><option value="3,5 x 13">3,5 x 13</option><option value="3,5 x 16">3,5 x 16</option><option value="3,75 x 7">3,75 x 7</option><option value="3,75 x 9">3,75 x 9</option><option value="3,75 x 11">3,75 x 11</option><option value="4 x 7">4 x 7</option><option value="4 x 9">4 x 9</option><option value="4,3 x 8">4,3 x 8</option><option value="4,3 x 10">4,3 x 10</option><option value="4,3 x 11,5">4,3 x 11,5</option><option value="4,3 x 13">4,3 x 13</option></select><button type="button" class="btn btn-small" onclick="removerImplante(this)">❌</button>';
+            container.appendChild(novoItem);
+        }
+
+        function removerImplante(btn) {
+            btn.parentElement.remove();
+        }
+
+        function adicionarEstoque(event) {
+            event.preventDefault();
+            const tamanho = document.getElementById('tamanhoImplante').value;
+            const qtd = parseInt(document.getElementById('qtdImplante').value);
+            if (db) {
+                const estoqueRef = db.ref('estoque/' + tamanho);
+                estoqueRef.once('value', snap => {
+                    const atual = snap.val() || 0;
+                    estoqueRef.set(atual + qtd);
+                    document.getElementById('formEstoque').reset();
+                    alert('Estoque atualizado!');
+                });
+            }
+        }
+
+        function atualizarEstoque() {
+            const container = document.getElementById('estoqueContainer');
+            if (!Object.keys(estoque).length) {
+                container.innerHTML = '<div class="empty-state">Nenhum estoque</div>';
+                return;
+            }
+            let html = '';
+            for (let [tamanho, qtd] of Object.entries(estoque)) {
+                html += `<div class="estoque-item"><div class="estoque-tamanho">${tamanho}</div><div class="estoque-qtd">Quantidade: ${qtd}</div></div>`;
+            }
+            container.innerHTML = html;
+        }
+
+        function atualizarTudo() {
+            atualizarMetricas();
+            atualizarPacientes();
+        }
+
+        function atualizarMetricas() {
+            document.getElementById('totalCir').textContent = cirurgias.length;
+            document.getElementById('normalCir').textContent = cirurgias.filter(c => c.tipo === 'Normal').length;
+            document.getElementById('perdaCir').textContent = cirurgias.filter(c => c.tipo === 'Perda').length;
+            document.getElementById('repCir').textContent = cirurgias.filter(c => c.tipo === 'Repetição').length;
+        }
+
+        function atualizarPacientes() {
+            const lista = document.getElementById('listaPacientes');
+            if (!cirurgias.length) {
+                lista.innerHTML = '<div class="empty-state">Nenhuma cirurgia</div>';
+                return;
+            }
+            lista.innerHTML = cirurgias.map(c => {
+                const data = new Date(c.data).toLocaleDateString('pt-BR');
+                const impl = c.implantes ? c.implantes.join(' + ') : 'Nenhum';
+                return `<div class="patient-card"><div class="patient-name">${c.nome}</div><div class="patient-detail"><span class="badge">${data}</span><span class="badge">${c.clinica}</span><span class="badge">${c.tipo}</span><span class="badge">${impl}</span></div></div>`;
+            }).join('');
+        }
+
+        function atualizarRelatorios() {
+            const consumo = {};
+            cirurgias.forEach(c => {
+                if (c.implantes && Array.isArray(c.implantes)) {
+                    c.implantes.forEach(impl => {
+                        consumo[impl] = (consumo[impl] || 0) + 1;
+                    });
+                }
+            });
+
+            const labels = Object.keys(consumo);
+            const valores = Object.values(consumo);
+
+            if (graficos.consumo) graficos.consumo.destroy();
+            const ctx = document.getElementById('graficoConsumo');
+            if (ctx) {
+                graficos.consumo = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels.length ? labels : ['Sem dados'],
+                        datasets: [{label: 'Consumo', data: valores.length ? valores : [0], backgroundColor: '#87CEEB'}]
+                    },
+                    options: {responsive: true, maintainAspectRatio: false, indexAxis: 'y'}
+                });
+            }
+
+            let html = '';
+            for (let [impl, qtd] of Object.entries(consumo)) {
+                html += `<div class="estoque-item"><div class="estoque-tamanho">${impl}</div><div class="estoque-qtd">Consumido: ${qtd}</div></div>`;
+            }
+            document.getElementById('relatorioConsumo').innerHTML = html || '<div class="empty-state">Nenhum implante</div>';
+        }
+
+        function inicializarFiltros() {
+            const hoje = new Date();
+            const mes = hoje.getFullYear() + '-' + String(hoje.getMonth() + 1).padStart(2, '0');
+            document.getElementById('mesInicial').value = mes;
+            document.getElementById('mesFinal').value = mes;
+        }
+
+        function gerarComparativo() {
+            const mesIni = document.getElementById('mesInicial').value;
+            const mesFim = document.getElementById('mesFinal').value;
+            if (!mesIni || !mesFim) { alert('Selecione período'); return; }
+
+            const consumo = {};
+            // Simulação: carregaria dados de múltiplos meses
+            // Por enquanto usa dados do mês atual
+            cirurgias.forEach(c => {
+                if (c.implantes) {
+                    c.implantes.forEach(impl => {
+                        consumo[impl] = (consumo[impl] || 0) + 1;
+                    });
+                }
+            });
+
+            const labels = Object.keys(consumo);
+            const valores = Object.values(consumo);
+
+            if (graficos.comparativo) graficos.comparativo.destroy();
+            const ctx = document.getElementById('graficoComparativo');
+            if (ctx) {
+                graficos.comparativo = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels.length ? labels : ['Sem dados'],
+                        datasets: [{label: 'Consumo', data: valores.length ? valores : [0], backgroundColor: '#87CEEB'}]
+                    },
+                    options: {responsive: true, maintainAspectRatio: false, indexAxis: 'y'}
+                });
+            }
+
+            let html = '';
+            for (let [impl, qtd] of Object.entries(consumo)) {
+                html += `<div class="estoque-item"><div class="estoque-tamanho">${impl}</div><div class="estoque-qtd">Consumido: ${qtd}</div></div>`;
+            }
+            document.getElementById('tabelaComparativo').innerHTML = html || '<div class="empty-state">Nenhum dado</div>';
+        }
+
+        function exportarExcel() {
+            if (!cirurgias.length) { alert('Nenhuma cirurgia'); return; }
+            const dados = cirurgias.map(c => ({Nome: c.nome, Data: c.data, Clínica: c.clinica, Procedimento: c.procedimento, Tipo: c.tipo, Implantes: c.implantes ? c.implantes.join(', ') : '', Obs: c.obs || ''}));
+            const planilha = XLSX.utils.json_to_sheet(dados);
+            const livro = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(livro, planilha, 'Cirurgias');
+            XLSX.writeFile(livro, 'Cirurgias_' + getMes() + '.xlsx');
+        }
+    </script>
+</body>
+</html>
