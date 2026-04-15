@@ -371,18 +371,37 @@
             appId: "1:177370665539:web:96d5a52efc3595c93f7af6"
         };
 
-        // Inicializar Firebase
-        try {
-            firebase.initializeApp(firebaseConfig);
-            db = firebase.database();
-            document.getElementById('statusConexao').textContent = '🟢 Conectado';
-            console.log('Firebase conectado');
-            carregarDados();
-        } catch(e) {
-            console.error('Firebase error:', e);
-            document.getElementById('statusConexao').textContent = '🔴 Modo offline (usando dados locais)';
-            inicializarOffline();
+        // Inicializar Firebase com melhor tratamento de erros
+        function inicializarFirebase() {
+            try {
+                // Verificar se Firebase já foi inicializado
+                if (firebase.apps.length === 0) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+                db = firebase.database();
+                db.ref('.info/connected').on('value', function(snapshot) {
+                    if (snapshot.val() === true) {
+                        document.getElementById('statusConexao').textContent = '🟢 Conectado';
+                        document.getElementById('statusConexao').style.color = '#28a745';
+                        console.log('Firebase conectado');
+                        carregarDados();
+                    } else {
+                        document.getElementById('statusConexao').textContent = '🔴 Desconectado (offline)';
+                        document.getElementById('statusConexao').style.color = '#dc3545';
+                        console.log('Firebase desconectado');
+                        inicializarOffline();
+                    }
+                });
+            } catch(e) {
+                console.error('Firebase init error:', e);
+                document.getElementById('statusConexao').textContent = '🔴 Erro Firebase (offline)';
+                inicializarOffline();
+                // Retry em 5 segundos
+                setTimeout(inicializarFirebase, 5000);
+            }
         }
+
+        inicializarFirebase();
 
         function inicializarOffline() {
             console.log('Modo offline ativado');
@@ -395,21 +414,26 @@
                 return;
             }
 
-            // Carregar estoque
+            console.log('Carregando dados do Firebase...');
+
+            // Carregar estoque com sincronização em tempo real
             db.ref('estoque').on('value', (snap) => {
                 estoque = snap.val() || {};
-                console.log('Estoque carregado:', estoque);
+                console.log('✓ Estoque sincronizado:', Object.keys(estoque).length, 'registros');
                 atualizarSelectsComMateriais();
+                atualizarDashboard();
             }, (err) => {
                 console.error('Erro ao carregar estoque:', err);
                 inicializarOffline();
             });
 
-            // Carregar consumos de todos os meses
+            // Carregar consumos de todos os meses com sincronização em tempo real
             db.ref('materiais/consumo').on('value', (snap) => {
                 consumos = snap.val() || {};
-                console.log('Consumos carregados:', consumos);
+                console.log('✓ Consumos sincronizados');
                 atualizarDashboard();
+            }, (err) => {
+                console.error('Erro ao carregar consumos:', err);
             });
         }
 
@@ -504,7 +528,7 @@
                 clinica: clinica,
                 timestamp: Date.now()
             }).then(() => {
-                console.log('Consumo registrado');
+                console.log('✓ Consumo registrado e sincronizado:', material, qtd, 'un');
                 mostrarMensagem('msgConsumoSucesso');
                 document.getElementById('formConsumo').reset();
                 const today = new Date().toISOString().split('T')[0];
@@ -534,7 +558,7 @@
 
             const chave = clinica + ':' + material;
             db.ref('estoque').child(chave).set(qtd).then(() => {
-                console.log('Estoque atualizado:', chave);
+                console.log('✓ Estoque sincronizado:', chave, '=', qtd);
                 mostrarMensagem('msgEstoqueSucesso');
                 document.getElementById('formEstoque').reset();
             }).catch(err => {
@@ -561,7 +585,7 @@
 
             const chave = clinica + ':' + material;
             db.ref('estoque').child(chave).set(qtd).then(() => {
-                console.log('Material cadastrado:', material);
+                console.log('✓ Novo material sincronizado:', material);
                 mostrarMensagem('msgNovoSucesso');
                 document.getElementById('formNovoMaterial').reset();
                 setTimeout(() => atualizarSelectsComMateriais(), 500);
@@ -593,7 +617,7 @@
 
             db.ref('estoque').child(chaveAtual).remove().then(() => {
                 db.ref('estoque').child(chaveNova).set(qtd).then(() => {
-                    console.log('Material renomeado');
+                    console.log('✓ Material sincronizado renomeado:', materialAtual, '→', novoNome);
                     mostrarMensagem('msgEditarSucesso');
                     document.getElementById('formEditarMaterial').reset();
                     setTimeout(() => atualizarListaEditar(), 500);
