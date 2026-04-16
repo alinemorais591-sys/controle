@@ -75,6 +75,23 @@
         .implante-checkbox input{margin-right:8px;cursor:pointer}
         .implante-checkbox label{cursor:pointer;flex:1;font-size:12px;margin:0}
     </style>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-database-compat.js"></script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCqr-0xO-BjGa8cgBvIhglQkbCBwGEHAIo",
+            authDomain: "viamao-cirurgias.firebaseapp.com",
+            databaseURL: "https://viamao-cirurgias-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "viamao-cirurgias",
+            storageBucket: "viamao-cirurgias.firebasestorage.app",
+            messagingSenderId: "177370665539",
+            appId: "1:177370665539:web:96d5a52efc3595c93f7af6"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+    </script>
 </head>
 <body>
     <div class="container">
@@ -684,18 +701,39 @@
 
         // ===== PERSISTÊNCIA =====
         function salvarDados() {
-            localStorage.setItem('cirurgias_data', JSON.stringify(cirurgias));
-            localStorage.setItem('estoque_data', JSON.stringify(estoque));
+            db.ref('controle_cirurgias').set({
+                cirurgias: cirurgias,
+                estoque: estoque,
+                ultimaAtualizacao: new Date().toISOString()
+            }).catch(err => {
+                console.error('Erro Firebase, usando localStorage:', err);
+                localStorage.setItem('cirurgias_data', JSON.stringify(cirurgias));
+                localStorage.setItem('estoque_data', JSON.stringify(estoque));
+            });
         }
 
         function carregarDados() {
-            const cirugiasSalvas = localStorage.getItem('cirurgias_data');
-            const estoqueSalvo = localStorage.getItem('estoque_data');
-
-            if (cirugiasSalvas) cirurgias = JSON.parse(cirugiasSalvas);
-            if (estoqueSalvo) estoque = JSON.parse(estoqueSalvo);
-
-            console.log('Dados carregados:', {cirurgias: cirurgias.length, estoque: Object.keys(estoque).length});
+            db.ref('controle_cirurgias').on('value', (snapshot) => {
+                const dados = snapshot.val();
+                if (dados) {
+                    cirurgias = dados.cirurgias || [];
+                    estoque = dados.estoque || {};
+                } else {
+                    const cs = localStorage.getItem('cirurgias_data');
+                    const es = localStorage.getItem('estoque_data');
+                    if (cs) cirurgias = JSON.parse(cs);
+                    if (es) estoque = JSON.parse(es);
+                    if (cirurgias.length > 0 || Object.keys(estoque).length > 0) salvarDados();
+                }
+                atualizar();
+            }, (err) => {
+                console.error('Firebase error:', err);
+                const cs = localStorage.getItem('cirurgias_data');
+                const es = localStorage.getItem('estoque_data');
+                if (cs) cirurgias = JSON.parse(cs);
+                if (es) estoque = JSON.parse(es);
+                atualizar();
+            });
         }
 
         // Data padrão
