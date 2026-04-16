@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Controle de Cirurgia</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js"></script>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f5;color:#333}
+        .container{max-width:100%;margin:0;padding:0}
+        .header{background:linear-gradient(135deg,#87CEEB 0%,#5DADE2 100%);color:white;padding:15px;text-align:center}
+        .header h1{font-size:20px;margin-bottom:5px}
+        .header p{font-size:12px;opacity:.95}
+        .status{font-size:11px;margin-top:8px;color:#4CAF50;display:flex;align-items:center;justify-content:center;gap:5px}
+        .tabs-nav{display:flex;background:white;border-bottom:2px solid #ddd;overflow-x:auto;position:sticky;top:0;z-index:100}
+        .tab-link{flex:1;min-width:70px;padding:12px 8px;background:white;border:none;border-bottom:3px solid white;cursor:pointer;font-size:11px;font-weight:600;color:#666;text-align:center;transition:all .3s}
+        .tab-link.active{color:#87CEEB;border-bottom-color:#87CEEB;background:#f0f8ff}
+        .content{padding:15px;min-height:calc(100vh - 200px)}
+        .tab-pane{display:none}
+        .tab-pane.active{display:block}
+        .card{background:white;padding:15px;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,.1);margin-bottom:15px}
+        .card h2{color:#1F4E78;font-size:14px;margin-bottom:12px;border-bottom:2px solid #87CEEB;padding-bottom:8px}
+        .form-group{margin-bottom:12px}
+        .form-group label{display:block;font-weight:500;font-size:12px;margin-bottom:6px;color:#333}
+        input[type="text"],input[type="number"],input[type="date"],textarea,select{width:100%;padding:10px;border:2px solid #ddd;border-radius:6px;font-size:14px;font-family:inherit}
+        input[type="text"]:focus,input[type="number"]:focus,input[type="date"]:focus,textarea:focus,select:focus{outline:0;border-color:#87CEEB}
+        textarea{resize:vertical;min-height:70px}
+        .radio-group{display:flex;flex-direction:column;gap:8px}
+        .radio-item{display:flex;align-items:center;padding:8px;border:2px solid #ddd;border-radius:6px;cursor:pointer}
+        .radio-item input[type="radio"]{margin-right:10px;cursor:pointer;width:18px;height:18px}
+        .radio-item label{margin:0;cursor:pointer;flex:1}
+        .btn-container{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:15px}
+        .btn{padding:12px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;text-transform:uppercase;transition:all .3s}
+        .btn:hover{opacity:0.85;transform:translateY(-2px)}
+        .btn:disabled{opacity:0.5;cursor:not-allowed}
+        .btn-submit{background:#87CEEB;color:white}
+        .btn-reset{background:#f0f0f0;color:#333}
+        .btn-export{background:#4CAF50;color:white;grid-column:1 / -1}
+        .btn-small{padding:8px 12px;font-size:11px}
+        .btn-delete{background:#f44336;color:white;width:40px;padding:6px}
+        .btn-edit{background:#ff9800;color:white;width:40px;padding:6px}
+        .btn-add{background:#4CAF50;color:white;width:100%;padding:10px;margin-top:8px}
+        .metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:15px}
+        .metric-box{background:#f8f9fa;padding:12px;border-radius:6px;border-left:4px solid #87CEEB;text-align:center}
+        .metric-number{font-size:24px;font-weight:600;color:#87CEEB}
+        .metric-label{font-size:11px;color:#666;margin-top:4px}
+        .patient-card{background:#f8f9fa;padding:10px;border-radius:6px;border-left:4px solid #87CEEB;margin-bottom:8px}
+        .patient-name{font-weight:600;font-size:13px;margin-bottom:4px}
+        .patient-detail{font-size:11px;color:#666;line-height:1.5}
+        .badge{display:inline-block;padding:2px 6px;background:#87CEEB;color:white;border-radius:3px;font-size:10px;margin-right:4px;margin-bottom:2px}
+        .success-msg{display:none;background:#d4edda;color:#155724;padding:10px;border-radius:6px;margin-bottom:10px;font-size:12px;border-left:4px solid #28a745;animation:slideIn 0.3s}
+        .success-msg.show{display:block}
+        .error-msg{display:none;background:#f8d7da;color:#721c24;padding:10px;border-radius:6px;margin-bottom:10px;font-size:12px;border-left:4px solid #f44336;animation:slideIn 0.3s}
+        .error-msg.show{display:block}
+        @keyframes slideIn{from{transform:translateY(-10px);opacity:0} to{transform:translateY(0);opacity:1}}
+        .empty-state{text-align:center;padding:30px 15px;color:#999;font-size:13px}
+        .chart-container{position:relative;height:250px;margin-bottom:15px}
+        .required{color:#FFC107}
+        .estoque-item{background:#f8f9fa;padding:10px;border-radius:6px;border-left:4px solid #87CEEB;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+        .estoque-tamanho{font-weight:600;color:#333;flex:1}
+        .estoque-qtd{font-size:14px;color:#87CEEB;font-weight:600;min-width:60px;text-align:right}
+        .estoque-controls{display:flex;gap:5px;align-items:center;margin-left:10px}
+        .estoque-controls input{width:60px;padding:5px;font-size:11px;border:1px solid #ddd;border-radius:4px}
+        .clinic-filter{display:flex;gap:8px;margin-bottom:15px;flex-wrap:wrap}
+        .clinic-filter button{flex:1;min-width:80px;padding:10px;border:2px solid #ddd;background:white;border-radius:6px;cursor:pointer;font-weight:600;font-size:12px;transition:all .3s}
+        .clinic-filter button.active{background:#87CEEB;color:white;border-color:#87CEEB}
+        .implante-badge{display:inline-block;background:#e3f2fd;border:1px solid #87CEEB;color:#1976d2;padding:6px 10px;border-radius:20px;font-size:11px;margin-right:6px;margin-bottom:6px}
+        .implante-badge .remove{cursor:pointer;margin-left:6px;font-weight:bold;color:#f44336}
+        .implantes-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;margin-bottom:12px;min-height:30px;align-content:flex-start}
+        .implantes-list{background:#f0f8ff;padding:10px;border-radius:6px;margin-bottom:12px}
+        .implantes-list h4{font-size:11px;color:#1F4E78;margin-bottom:8px;font-weight:600}
+        .implante-checkbox{display:flex;align-items:center;margin-bottom:6px}
+        .implante-checkbox input{margin-right:8px;cursor:pointer}
+        .implante-checkbox label{cursor:pointer;flex:1;font-size:12px;margin:0}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 Controle de Cirurgia</h1>
+            <p>Sistema de Controle de Cirurgias + Estoque</p>
+            <div class="status" id="statusConexao">🟢 Pronto para uso</div>
+        </div>
+
+        <div class="tabs-nav" id="tabsNav">
+            <button class="tab-link active" data-tab="aba1">📝 Registrar</button>
+            <button class="tab-link" data-tab="aba2">📊 Dashboard</button>
+            <button class="tab-link" data-tab="aba3">📦 Estoque</button>
+            <button class="tab-link" data-tab="aba4">📈 Relatórios</button>
+            <button class="tab-link" data-tab="aba5">👥 Pacientes</button>
+        </div>
+
+        <div class="content">
+            <!-- ABA 1: REGISTRAR -->
+            <div id="aba1" class="tab-pane active">
+                <div class="card">
+                    <h2>Registrar Nova Cirurgia</h2>
+                    <div class="success-msg" id="msgSucesso">✓ Cirurgia registrada com sucesso!</div>
+                    <div class="error-msg" id="msgErro">✗ Erro ao registrar</div>
+
+                    <form id="formulario">
+                        <div class="form-group">
+                            <label>Nome do Paciente <span class="required">*</span></label>
+                            <input type="text" id="inputNome" required placeholder="Digite o nome">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Data da Cirurgia <span class="required">*</span></label>
+                            <input type="date" id="inputData" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Clínica <span class="required">*</span></label>
+                            <div class="radio-group">
+                                <div class="radio-item">
+                                    <input type="radio" id="opt1" name="clinica" value="Viamão" required>
+                                    <label for="opt1">Viamão</label>
+                                </div>
+                                <div class="radio-item">
+                                    <input type="radio" id="opt2" name="clinica" value="Esteio">
+                                    <label for="opt2">Esteio</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Procedimento <span class="required">*</span></label>
+                            <select id="inputProcedimento" required>
+                                <option value="">-- Selecione --</option>
+                                <option value="Levantamento de seio">Levantamento de seio</option>
+                                <option value="Implante">Implante</option>
+                                <option value="Extração + Implante">Extração + Implante</option>
+                                <option value="Implante + Levantamento de seio + Exo">Implante + Levantamento de seio + Exo</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Tipo de Cirurgia</label>
+                            <div class="radio-group">
+                                <div class="radio-item">
+                                    <input type="radio" id="tipo1" name="tipo" value="Normal" checked>
+                                    <label for="tipo1">Normal</label>
+                                </div>
+                                <div class="radio-item">
+                                    <input type="radio" id="tipo2" name="tipo" value="Perda">
+                                    <label for="tipo2">Perda</label>
+                                </div>
+                                <div class="radio-item">
+                                    <input type="radio" id="tipo3" name="tipo" value="Repetição">
+                                    <label for="tipo3">Repetição</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Implantes Utilizados</label>
+                            <div style="display:flex;gap:10px;margin-bottom:10px">
+                                <select id="selectImplantesReg" style="flex:1">
+                                    <option value="">-- Selecione o tamanho --</option>
+                                </select>
+                                <button type="button" class="btn btn-add" id="btnAdicionarImplante" style="width:auto;margin:0;padding:10px 15px">Adicionar</button>
+                            </div>
+                            <div class="implantes-grid" id="implantesGrid"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Observações</label>
+                            <textarea id="inputObs" placeholder="Notas adicionais..."></textarea>
+                        </div>
+
+                        <div class="btn-container">
+                            <button type="submit" class="btn btn-submit">Salvar Cirurgia</button>
+                            <button type="reset" class="btn btn-reset">Limpar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- ABA 2: DASHBOARD -->
+            <div id="aba2" class="tab-pane">
+                <div class="card">
+                    <h2>Dashboard de Cirurgias</h2>
+                    
+                    <div class="clinic-filter">
+                        <button class="clinic-btn active" data-clinic="todos">Todos</button>
+                        <button class="clinic-btn" data-clinic="Viamão">Viamão</button>
+                        <button class="clinic-btn" data-clinic="Esteio">Esteio</button>
+                    </div>
+
+                    <div class="metrics">
+                        <div class="metric-box">
+                            <div class="metric-number" id="totalCir">0</div>
+                            <div class="metric-label">Total de Cirurgias</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="metric-number" id="normalCir">0</div>
+                            <div class="metric-label">Normais</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="metric-number" id="perdaCir">0</div>
+                            <div class="metric-label">Perda</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="metric-number" id="repCir">0</div>
+                            <div class="metric-label">Repetições</div>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <canvas id="graficoDashboard"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ABA 3: ESTOQUE -->
+            <div id="aba3" class="tab-pane">
+                <div class="card">
+                    <h2>Gerenciar Estoque</h2>
+                    <div class="success-msg" id="msgEstoque">✓ Estoque atualizado!</div>
+
+                    <div style="margin-bottom:20px;padding:15px;background:#e8f5e9;border-radius:6px;border-left:4px solid #4CAF50">
+                        <h3 style="font-size:13px;margin-bottom:10px;color:#2e7d32">Adicionar/Atualizar Estoque</h3>
+                        <div class="form-group">
+                            <label>Tamanho do Implante <span class="required">*</span></label>
+                            <select id="selectTamanhoEstoque" required>
+                                <option value="">-- Selecione o tamanho --</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Quantidade <span class="required">*</span></label>
+                            <input type="number" id="qtdEstoque" placeholder="Quantidade" min="0" required>
+                        </div>
+                        <button class="btn btn-add" id="btnAdicionarEstoque">✓ Adicionar/Atualizar</button>
+                    </div>
+
+                    <h3 style="font-size:13px;margin:15px 0 10px;color:#1F4E78">Estoque Atual</h3>
+                    <div id="estoqueContainer"></div>
+                </div>
+            </div>
+
+            <!-- ABA 4: RELATÓRIOS -->
+            <div id="aba4" class="tab-pane">
+                <div class="card">
+                    <h2>Análise do Mês</h2>
+                    
+                    <div style="margin-bottom:15px">
+                        <strong style="font-size:12px">Período:</strong>
+                        <div style="display:flex;gap:10px;margin-top:8px">
+                            <input type="month" id="filtroMes" style="flex:1">
+                        </div>
+                        <button class="btn btn-submit" id="btnGerarRelatorio" style="width:100%;margin-top:10px">Gerar Relatório</button>
+                    </div>
+
+                    <h3 style="font-size:13px;margin:15px 0 10px">Consumo por Tamanho</h3>
+                    <div class="chart-container">
+                        <canvas id="graficoConsumo"></canvas>
+                    </div>
+
+                    <h3 style="font-size:13px;margin:15px 0 10px">Consumo Detalhado</h3>
+                    <div id="relatorioConsumo"></div>
+
+                    <h3 style="font-size:13px;margin:15px 0 10px">Sugestão de Compra</h3>
+                    <div id="sugestaoCompra" class="empty-state">Gere o relatório para ver sugestão</div>
+
+                    <div style="margin-top:20px">
+                        <button class="btn btn-export" id="btnExportarExcel">📥 Exportar para Excel</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ABA 5: PACIENTES -->
+            <div id="aba5" class="tab-pane">
+                <div class="card">
+                    <h2>Pacientes - Viamão</h2>
+                    <div id="pacientesViamao" class="patient-list"></div>
+                </div>
+
+                <div class="card">
+                    <h2>Pacientes - Esteio</h2>
+                    <div id="pacientesEsteio" class="patient-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== LISTA DE TAMANHOS PADRÃO =====
+        const TAMANHOS_IMPLANTES = [
+            "3,5 x 7",
+            "3,5 x 8",
+            "3,5 x 10",
+            "3,5 x 11,5",
+            "3,5 x 13",
+            "3,5 x 16",
+            "3,75 x 7",
+            "3,75 x 9",
+            "3,75 x 11",
+            "4 x 7",
+            "4 x 9",
+            "4,3 x 8",
+            "4,3 x 10",
+            "4,3 x 11,5"
+        ];
+
+        // ===== DADOS =====
+        let cirurgias = [];
+        let estoque = {};
+        let graficos = {};
+        let filtroClinicaAtual = 'todos';
+        let implantesAtual = [];
+
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Iniciando aplicação...');
+            carregarDados();
+            inicializarTamanhos();
+            configurarEventListeners();
+            atualizar();
+        });
+
+        function inicializarTamanhos() {
+            // Preencher dropdown na aba de Registrar
+            const selectReg = document.getElementById('selectImplantesReg');
+            TAMANHOS_IMPLANTES.forEach(tamanho => {
+                const option = document.createElement('option');
+                option.value = tamanho;
+                option.textContent = tamanho;
+                selectReg.appendChild(option);
+            });
+
+            // Preencher dropdown na aba de Estoque
+            const selectEstoque = document.getElementById('selectTamanhoEstoque');
+            TAMANHOS_IMPLANTES.forEach(tamanho => {
+                const option = document.createElement('option');
+                option.value = tamanho;
+                option.textContent = tamanho;
+                selectEstoque.appendChild(option);
+            });
+        }
+
+        function atualizarImplantes() {
+            const grid = document.getElementById('implantesGrid');
+            if (implantesAtual.length === 0) {
+                grid.innerHTML = '';
+                return;
+            }
+
+            grid.innerHTML = implantesAtual.map(impl => `
+                <span class="implante-badge">
+                    ${impl}
+                    <span class="remove" onclick="removerImplante('${impl}')">×</span>
+                </span>
+            `).join('');
+        }
+
+        function adicionarImplanteAoRegistro() {
+            const tamanho = document.getElementById('selectImplantesReg').value;
+            
+            if (!tamanho) {
+                alert('Selecione um tamanho');
+                return;
+            }
+
+            implantesAtual.push(tamanho);
+            atualizarImplantes();
+            document.getElementById('selectImplantesReg').value = '';
+        }
+
+        function removerImplante(tamanho) {
+            const checkbox = document.querySelector(`#check_${tamanho}`);
+            if (checkbox) {
+                checkbox.checked = false;
+                atualizarImplantes();
+            }
+        }
+
+        function configurarEventListeners() {
+            // Tabs
+            document.querySelectorAll('.tab-link').forEach(tab => {
+                tab.addEventListener('click', (e) => mudarAba(e.target.dataset.tab));
+            });
+
+            // Formulário cirurgia
+            document.getElementById('formulario').addEventListener('submit', (e) => {
+                e.preventDefault();
+                registrarCirurgia();
+            });
+
+            // Botão adicionar implante
+            document.getElementById('btnAdicionarImplante').addEventListener('click', adicionarImplanteAoRegistro);
+
+            // Estoque
+            document.getElementById('btnAdicionarEstoque').addEventListener('click', adicionarEstoque);
+            document.getElementById('btnGerarRelatorio').addEventListener('click', gerarRelatorio);
+            document.getElementById('btnExportarExcel').addEventListener('click', exportarExcel);
+
+            // Filtro clínica
+            document.querySelectorAll('.clinic-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.clinic-btn').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    filtroClinicaAtual = e.target.dataset.clinic;
+                    atualizar();
+                });
+            });
+        }
+
+        function mudarAba(abaId) {
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-link').forEach(t => t.classList.remove('active'));
+            document.getElementById(abaId).classList.add('active');
+            document.querySelector(`[data-tab="${abaId}"]`).classList.add('active');
+
+            if (abaId === 'aba2') atualizarDashboard();
+            if (abaId === 'aba3') atualizarEstoque();
+            if (abaId === 'aba5') atualizarPacientes();
+        }
+
+        function registrarCirurgia() {
+            const nome = document.getElementById('inputNome').value;
+            const data = document.getElementById('inputData').value;
+            const clinica = document.querySelector('input[name="clinica"]:checked').value;
+            const procedimento = document.getElementById('inputProcedimento').value;
+            const tipo = document.querySelector('input[name="tipo"]:checked').value;
+            const obs = document.getElementById('inputObs').value;
+
+            if (!nome || !data || !procedimento) {
+                document.getElementById('msgErro').classList.add('show');
+                setTimeout(() => document.getElementById('msgErro').classList.remove('show'), 3000);
+                return;
+            }
+
+            // Verificar se há estoque suficiente
+            for (let implante of implantesAtual) {
+                const qtdEstoque = estoque[implante] || 0;
+                if (qtdEstoque <= 0) {
+                    document.getElementById('msgErro').textContent = `✗ Sem estoque: ${implante}`;
+                    document.getElementById('msgErro').classList.add('show');
+                    setTimeout(() => document.getElementById('msgErro').classList.remove('show'), 3000);
+                    return;
+                }
+            }
+
+            // Descontar do estoque
+            for (let implante of implantesAtual) {
+                estoque[implante] = (estoque[implante] || 0) - 1;
+            }
+
+            const cirurgia = {
+                id: Date.now(),
+                nome, data, clinica, procedimento, tipo, implantes: implantesAtual, obs,
+                dataCriacao: new Date().toISOString()
+            };
+
+            cirurgias.push(cirurgia);
+            salvarDados();
+            atualizar();
+
+            document.getElementById('formulario').reset();
+            implantesAtual = [];
+            document.getElementById('selectImplantesReg').value = '';
+            atualizarImplantes();
+            document.getElementById('msgSucesso').classList.add('show');
+            setTimeout(() => document.getElementById('msgSucesso').classList.remove('show'), 3000);
+        }
+
+        function adicionarEstoque() {
+            const tamanho = document.getElementById('selectTamanhoEstoque').value;
+            const qtd = parseInt(document.getElementById('qtdEstoque').value);
+
+            if (!tamanho || !qtd || qtd < 0) {
+                alert('Selecione o tamanho e quantidade válida');
+                return;
+            }
+
+            estoque[tamanho] = qtd;
+            salvarDados();
+            atualizarEstoque();
+
+            document.getElementById('selectTamanhoEstoque').value = '';
+            document.getElementById('qtdEstoque').value = '';
+            document.getElementById('msgEstoque').classList.add('show');
+            setTimeout(() => document.getElementById('msgEstoque').classList.remove('show'), 2000);
+        }
+
+        function atualizarEstoque() {
+            const container = document.getElementById('estoqueContainer');
+            if (!Object.keys(estoque).length) {
+                container.innerHTML = '<div class="empty-state">Nenhum estoque cadastrado</div>';
+                return;
+            }
+
+            let html = '';
+            TAMANHOS_IMPLANTES.forEach(tamanho => {
+                const qtd = estoque[tamanho];
+                if (qtd !== undefined) {
+                    html += `
+                        <div class="estoque-item">
+                            <div class="estoque-tamanho">${tamanho}</div>
+                            <div class="estoque-controls">
+                                <input type="number" min="0" value="${qtd}" data-tamanho="${tamanho}" class="input-qtd">
+                                <button class="btn btn-edit btn-small" onclick="editarEstoque('${tamanho}')">OK</button>
+                                <button class="btn btn-delete btn-small" onclick="deletarEstoque('${tamanho}')">X</button>
+                            </div>
+                            <div class="estoque-qtd">${qtd}</div>
+                        </div>
+                    `;
+                }
+            });
+            container.innerHTML = html || '<div class="empty-state">Nenhum estoque cadastrado</div>';
+        }
+
+        function editarEstoque(tamanho) {
+            const input = document.querySelector(`input[data-tamanho="${tamanho}"]`);
+            const novaQtd = parseInt(input.value) || 0;
+            estoque[tamanho] = novaQtd;
+            salvarDados();
+            atualizarEstoque();
+            document.getElementById('msgEstoque').classList.add('show');
+            setTimeout(() => document.getElementById('msgEstoque').classList.remove('show'), 2000);
+        }
+
+        function deletarEstoque(tamanho) {
+            if (confirm(`Deletar ${tamanho}?`)) {
+                delete estoque[tamanho];
+                salvarDados();
+                atualizarEstoque();
+            }
+        }
+
+        function atualizarDashboard() {
+            let filtrado = cirurgias;
+            if (filtroClinicaAtual !== 'todos') {
+                filtrado = cirurgias.filter(c => c.clinica === filtroClinicaAtual);
+            }
+
+            document.getElementById('totalCir').textContent = filtrado.length;
+            document.getElementById('normalCir').textContent = filtrado.filter(c => c.tipo === 'Normal').length;
+            document.getElementById('perdaCir').textContent = filtrado.filter(c => c.tipo === 'Perda').length;
+            document.getElementById('repCir').textContent = filtrado.filter(c => c.tipo === 'Repetição').length;
+
+            const tipoCounts = {
+                'Normal': filtrado.filter(c => c.tipo === 'Normal').length,
+                'Perda': filtrado.filter(c => c.tipo === 'Perda').length,
+                'Repetição': filtrado.filter(c => c.tipo === 'Repetição').length
+            };
+
+            if (graficos.dashboard) graficos.dashboard.destroy();
+            const ctx = document.getElementById('graficoDashboard');
+            if (ctx) {
+                graficos.dashboard = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(tipoCounts),
+                        datasets: [{
+                            data: Object.values(tipoCounts),
+                            backgroundColor: ['#87CEEB', '#f44336', '#ff9800']
+                        }]
+                    },
+                    options: {responsive: true, maintainAspectRatio: false, plugins: {legend: {position: 'bottom'}}}
+                });
+            }
+        }
+
+        function gerarRelatorio() {
+            const mes = document.getElementById('filtroMes').value;
+            if (!mes) {
+                alert('Selecione um mês');
+                return;
+            }
+
+            const [ano, mesNum] = mes.split('-');
+            const filtrado = cirurgias.filter(c => {
+                const dataCir = new Date(c.data);
+                return dataCir.getFullYear() == ano && (dataCir.getMonth() + 1) == mesNum;
+            });
+
+            const consumo = {};
+            filtrado.forEach(c => {
+                if (c.implantes && c.implantes.length) {
+                    c.implantes.forEach(impl => {
+                        consumo[impl] = (consumo[impl] || 0) + 1;
+                    });
+                }
+            });
+
+            if (graficos.consumo) graficos.consumo.destroy();
+            const ctx = document.getElementById('graficoConsumo');
+            if (ctx) {
+                graficos.consumo = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(consumo),
+                        datasets: [{
+                            label: 'Consumo',
+                            data: Object.values(consumo),
+                            backgroundColor: '#87CEEB'
+                        }]
+                    },
+                    options: {responsive: true, maintainAspectRatio: false}
+                });
+            }
+
+            let html = '';
+            for (let [impl, qtd] of Object.entries(consumo)) {
+                const atual = estoque[impl] || 0;
+                html += `
+                    <div class="estoque-item">
+                        <div style="flex:1">
+                            <div class="estoque-tamanho">${impl}</div>
+                            <small style="color:#666">Consumido: ${qtd} | Atual: ${atual}</small>
+                        </div>
+                    </div>
+                `;
+            }
+            document.getElementById('relatorioConsumo').innerHTML = html || '<div class="empty-state">Nenhum consumo</div>';
+
+            let sugestao = '<strong style="font-size:12px">Baseado no consumo de ' + mes + ':</strong><br><br>';
+            for (let [impl, qtd] of Object.entries(consumo)) {
+                const sug = Math.max(qtd * 2, 5);
+                const atual = estoque[impl] || 0;
+                sugestao += `<strong>${impl}:</strong> comprar ${sug} unidades (tem ${atual} em estoque)<br>`;
+            }
+            document.getElementById('sugestaoCompra').innerHTML = sugestao;
+        }
+
+        function atualizarPacientes() {
+            const viamao = cirurgias.filter(c => c.clinica === 'Viamão');
+            const esteio = cirurgias.filter(c => c.clinica === 'Esteio');
+
+            document.getElementById('pacientesViamao').innerHTML = renderPacientes(viamao);
+            document.getElementById('pacientesEsteio').innerHTML = renderPacientes(esteio);
+        }
+
+        function renderPacientes(lista) {
+            if (!lista.length) return '<div class="empty-state">Nenhum paciente</div>';
+            return lista.map(c => {
+                const data = new Date(c.data).toLocaleDateString('pt-BR');
+                const impl = c.implantes && c.implantes.length ? c.implantes.join(' + ') : 'Nenhum';
+                return `
+                    <div class="patient-card">
+                        <div class="patient-name">${c.nome}</div>
+                        <div class="patient-detail">
+                            <span class="badge">${data}</span>
+                            <span class="badge">${c.procedimento}</span>
+                            <span class="badge">${c.tipo}</span>
+                            <br/>
+                            <strong>Implantes:</strong> ${impl}
+                            ${c.obs ? `<br/><strong>Obs:</strong> ${c.obs}` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function exportarExcel() {
+            if (!cirurgias.length) {
+                alert('Nenhuma cirurgia para exportar');
+                return;
+            }
+
+            const dados = cirurgias.map(c => ({
+                'Nome': c.nome,
+                'Data': c.data,
+                'Clínica': c.clinica,
+                'Procedimento': c.procedimento,
+                'Tipo': c.tipo,
+                'Implantes': c.implantes ? c.implantes.join(', ') : '',
+                'Observações': c.obs || ''
+            }));
+
+            const planilha = XLSX.utils.json_to_sheet(dados);
+            const livro = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(livro, planilha, 'Cirurgias');
+            XLSX.writeFile(livro, 'Cirurgias_' + new Date().toLocaleDateString('pt-BR').replace(/\//g, '-') + '.xlsx');
+        }
+
+        function atualizar() {
+            atualizarDashboard();
+            atualizarPacientes();
+        }
+
+        // ===== PERSISTÊNCIA =====
+        function salvarDados() {
+            localStorage.setItem('cirurgias_data', JSON.stringify(cirurgias));
+            localStorage.setItem('estoque_data', JSON.stringify(estoque));
+        }
+
+        function carregarDados() {
+            const cirugiasSalvas = localStorage.getItem('cirurgias_data');
+            const estoqueSalvo = localStorage.getItem('estoque_data');
+
+            if (cirugiasSalvas) cirurgias = JSON.parse(cirugiasSalvas);
+            if (estoqueSalvo) estoque = JSON.parse(estoqueSalvo);
+
+            console.log('Dados carregados:', {cirurgias: cirurgias.length, estoque: Object.keys(estoque).length});
+        }
+
+        // Data padrão
+        const hoje = new Date();
+        const mes = hoje.getFullYear() + '-' + String(hoje.getMonth() + 1).padStart(2, '0');
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('filtroMes').value = mes;
+        });
+    </script>
+</body>
+</html>
