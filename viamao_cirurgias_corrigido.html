@@ -765,7 +765,8 @@
             editImplantesAtual = cirurgia.implantes ? [...cirurgia.implantes] : [];
             document.getElementById('editNome').value = cirurgia.nome || '';
             document.getElementById('editData').value = cirurgia.data || '';
-            document.getElementById('editClinica').value = cirurgia.clinica || 'viamao';
+            const clinicaVal = (cirurgia.clinica || 'viamao').toLowerCase();
+            document.getElementById('editClinica').value = clinicaVal;
             document.getElementById('editProcedimento').value = cirurgia.procedimento || 'Implante';
             document.getElementById('editTipo').value = cirurgia.tipo || 'Normal';
             document.getElementById('editObs').value = cirurgia.obs || '';
