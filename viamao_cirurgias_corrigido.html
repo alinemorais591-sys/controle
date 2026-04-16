@@ -74,6 +74,15 @@
         .implante-checkbox{display:flex;align-items:center;margin-bottom:6px}
         .implante-checkbox input{margin-right:8px;cursor:pointer}
         .implante-checkbox label{cursor:pointer;flex:1;font-size:12px;margin:0}
+    
+        /* Modal de edição */
+        .modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;justify-content:center;align-items:center}
+        .modal-overlay.active{display:flex}
+        .modal-box{background:#fff;border-radius:10px;padding:20px;width:90%;max-width:500px;max-height:90vh;overflow-y:auto;position:relative}
+        .modal-box h3{font-size:15px;margin-bottom:15px;color:#1F4E79}
+        .modal-close{position:absolute;top:10px;right:14px;font-size:20px;cursor:pointer;color:#666;background:none;border:none}
+        .btn-edit{background:#f0ad4e;color:white;border:none;border-radius:4px;padding:3px 8px;font-size:10px;cursor:pointer;margin-top:6px}
+        .btn-edit:hover{background:#ec971f}
     </style>
 
     <!-- Firebase SDK -->
@@ -96,17 +105,17 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>📋 Controle de Cirurgia</h1>
+            <h1>ð Controle de Cirurgia</h1>
             <p>Sistema de Controle de Cirurgias + Estoque</p>
-            <div class="status" id="statusConexao">🟢 Pronto para uso</div>
+            <div class="status" id="statusConexao">ð¢ Pronto para uso</div>
         </div>
 
         <div class="tabs-nav" id="tabsNav">
-            <button class="tab-link active" data-tab="aba1">📝 Registrar</button>
-            <button class="tab-link" data-tab="aba2">📊 Dashboard</button>
-            <button class="tab-link" data-tab="aba3">📦 Estoque</button>
-            <button class="tab-link" data-tab="aba4">📈 Relatórios</button>
-            <button class="tab-link" data-tab="aba5">👥 Pacientes</button>
+            <button class="tab-link active" data-tab="aba1">ð Registrar</button>
+            <button class="tab-link" data-tab="aba2">ð Dashboard</button>
+            <button class="tab-link" data-tab="aba3">ð¦ Estoque</button>
+            <button class="tab-link" data-tab="aba4">ð RelatÃ³rios</button>
+            <button class="tab-link" data-tab="aba5">ð¥ Pacientes</button>
         </div>
 
         <div class="content">
@@ -114,8 +123,8 @@
             <div id="aba1" class="tab-pane active">
                 <div class="card">
                     <h2>Registrar Nova Cirurgia</h2>
-                    <div class="success-msg" id="msgSucesso">✓ Cirurgia registrada com sucesso!</div>
-                    <div class="error-msg" id="msgErro">✗ Erro ao registrar</div>
+                    <div class="success-msg" id="msgSucesso">â Cirurgia registrada com sucesso!</div>
+                    <div class="error-msg" id="msgErro">â Erro ao registrar</div>
 
                     <form id="formulario">
                         <div class="form-group">
@@ -129,11 +138,11 @@
                         </div>
 
                         <div class="form-group">
-                            <label>Clínica <span class="required">*</span></label>
+                            <label>ClÃ­nica <span class="required">*</span></label>
                             <div class="radio-group">
                                 <div class="radio-item">
-                                    <input type="radio" id="opt1" name="clinica" value="Viamão" required>
-                                    <label for="opt1">Viamão</label>
+                                    <input type="radio" id="opt1" name="clinica" value="ViamÃ£o" required>
+                                    <label for="opt1">ViamÃ£o</label>
                                 </div>
                                 <div class="radio-item">
                                     <input type="radio" id="opt2" name="clinica" value="Esteio">
@@ -148,7 +157,7 @@
                                 <option value="">-- Selecione --</option>
                                 <option value="Levantamento de seio">Levantamento de seio</option>
                                 <option value="Implante">Implante</option>
-                                <option value="Extração + Implante">Extração + Implante</option>
+                                <option value="ExtraÃ§Ã£o + Implante">ExtraÃ§Ã£o + Implante</option>
                                 <option value="Implante + Levantamento de seio + Exo">Implante + Levantamento de seio + Exo</option>
                             </select>
                         </div>
@@ -165,8 +174,8 @@
                                     <label for="tipo2">Perda</label>
                                 </div>
                                 <div class="radio-item">
-                                    <input type="radio" id="tipo3" name="tipo" value="Repetição">
-                                    <label for="tipo3">Repetição</label>
+                                    <input type="radio" id="tipo3" name="tipo" value="RepetiÃ§Ã£o">
+                                    <label for="tipo3">RepetiÃ§Ã£o</label>
                                 </div>
                             </div>
                         </div>
@@ -183,7 +192,7 @@
                         </div>
 
                         <div class="form-group">
-                            <label>Observações</label>
+                            <label>ObservaÃ§Ãµes</label>
                             <textarea id="inputObs" placeholder="Notas adicionais..."></textarea>
                         </div>
 
@@ -202,7 +211,7 @@
                     
                     <div class="clinic-filter">
                         <button class="clinic-btn active" data-clinic="todos">Todos</button>
-                        <button class="clinic-btn" data-clinic="Viamão">Viamão</button>
+                        <button class="clinic-btn" data-clinic="ViamÃ£o">ViamÃ£o</button>
                         <button class="clinic-btn" data-clinic="Esteio">Esteio</button>
                     </div>
 
@@ -221,7 +230,7 @@
                         </div>
                         <div class="metric-box">
                             <div class="metric-number" id="repCir">0</div>
-                            <div class="metric-label">Repetições</div>
+                            <div class="metric-label">RepetiÃ§Ãµes</div>
                         </div>
                     </div>
 
@@ -235,7 +244,7 @@
             <div id="aba3" class="tab-pane">
                 <div class="card">
                     <h2>Gerenciar Estoque</h2>
-                    <div class="success-msg" id="msgEstoque">✓ Estoque atualizado!</div>
+                    <div class="success-msg" id="msgEstoque">â Estoque atualizado!</div>
 
                     <div style="margin-bottom:20px;padding:15px;background:#e8f5e9;border-radius:6px;border-left:4px solid #4CAF50">
                         <h3 style="font-size:13px;margin-bottom:10px;color:#2e7d32">Adicionar/Atualizar Estoque</h3>
@@ -249,7 +258,7 @@
                             <label>Quantidade <span class="required">*</span></label>
                             <input type="number" id="qtdEstoque" placeholder="Quantidade" min="0" required>
                         </div>
-                        <button class="btn btn-add" id="btnAdicionarEstoque">✓ Adicionar/Atualizar</button>
+                        <button class="btn btn-add" id="btnAdicionarEstoque">â Adicionar/Atualizar</button>
                     </div>
 
                     <h3 style="font-size:13px;margin:15px 0 10px;color:#1F4E78">Estoque Atual</h3>
@@ -257,17 +266,17 @@
                 </div>
             </div>
 
-            <!-- ABA 4: RELATÓRIOS -->
+            <!-- ABA 4: RELATÃRIOS -->
             <div id="aba4" class="tab-pane">
                 <div class="card">
-                    <h2>Análise do Mês</h2>
+                    <h2>AnÃ¡lise do MÃªs</h2>
                     
                     <div style="margin-bottom:15px">
-                        <strong style="font-size:12px">Período:</strong>
+                        <strong style="font-size:12px">PerÃ­odo:</strong>
                         <div style="display:flex;gap:10px;margin-top:8px">
                             <input type="month" id="filtroMes" style="flex:1">
                         </div>
-                        <button class="btn btn-submit" id="btnGerarRelatorio" style="width:100%;margin-top:10px">Gerar Relatório</button>
+                        <button class="btn btn-submit" id="btnGerarRelatorio" style="width:100%;margin-top:10px">Gerar RelatÃ³rio</button>
                     </div>
 
                     <h3 style="font-size:13px;margin:15px 0 10px">Consumo por Tamanho</h3>
@@ -278,11 +287,11 @@
                     <h3 style="font-size:13px;margin:15px 0 10px">Consumo Detalhado</h3>
                     <div id="relatorioConsumo"></div>
 
-                    <h3 style="font-size:13px;margin:15px 0 10px">Sugestão de Compra</h3>
-                    <div id="sugestaoCompra" class="empty-state">Gere o relatório para ver sugestão</div>
+                    <h3 style="font-size:13px;margin:15px 0 10px">SugestÃ£o de Compra</h3>
+                    <div id="sugestaoCompra" class="empty-state">Gere o relatÃ³rio para ver sugestÃ£o</div>
 
                     <div style="margin-top:20px">
-                        <button class="btn btn-export" id="btnExportarExcel">📥 Exportar para Excel</button>
+                        <button class="btn btn-export" id="btnExportarExcel">ð¥ Exportar para Excel</button>
                     </div>
                 </div>
             </div>
@@ -290,7 +299,7 @@
             <!-- ABA 5: PACIENTES -->
             <div id="aba5" class="tab-pane">
                 <div class="card">
-                    <h2>Pacientes - Viamão</h2>
+                    <h2>Pacientes - ViamÃ£o</h2>
                     <div id="pacientesViamao" class="patient-list"></div>
                 </div>
 
@@ -303,7 +312,7 @@
     </div>
 
     <script>
-        // ===== LISTA DE TAMANHOS PADRÃO =====
+        // ===== LISTA DE TAMANHOS PADRÃO =====
         const TAMANHOS_IMPLANTES = [
             "3,5 x 7",
             "3,5 x 8",
@@ -318,7 +327,8 @@
             "4 x 9",
             "4,3 x 8",
             "4,3 x 10",
-            "4,3 x 11,5"
+            "4,3 x 11,5",
+            "4,3 x 13"
         ];
 
         // ===== DADOS =====
@@ -330,7 +340,7 @@
 
         // Inicializar
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('Iniciando aplicação...');
+            console.log('Iniciando aplicaÃ§Ã£o...');
             carregarDados();
             inicializarTamanhos();
             configurarEventListeners();
@@ -367,7 +377,7 @@
             grid.innerHTML = implantesAtual.map(impl => `
                 <span class="implante-badge">
                     ${impl}
-                    <span class="remove" onclick="removerImplante('${impl}')">×</span>
+                    <span class="remove" onclick="removerImplante('${impl}')">Ã</span>
                 </span>
             `).join('');
         }
@@ -399,13 +409,13 @@
                 tab.addEventListener('click', (e) => mudarAba(e.target.dataset.tab));
             });
 
-            // Formulário cirurgia
+            // FormulÃ¡rio cirurgia
             document.getElementById('formulario').addEventListener('submit', (e) => {
                 e.preventDefault();
                 registrarCirurgia();
             });
 
-            // Botão adicionar implante
+            // BotÃ£o adicionar implante
             document.getElementById('btnAdicionarImplante').addEventListener('click', adicionarImplanteAoRegistro);
 
             // Estoque
@@ -413,7 +423,7 @@
             document.getElementById('btnGerarRelatorio').addEventListener('click', gerarRelatorio);
             document.getElementById('btnExportarExcel').addEventListener('click', exportarExcel);
 
-            // Filtro clínica
+            // Filtro clÃ­nica
             document.querySelectorAll('.clinic-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     document.querySelectorAll('.clinic-btn').forEach(b => b.classList.remove('active'));
@@ -449,11 +459,11 @@
                 return;
             }
 
-            // Verificar se há estoque suficiente
+            // Verificar se hÃ¡ estoque suficiente
             for (let implante of implantesAtual) {
                 const qtdEstoque = estoque[implante] || 0;
                 if (qtdEstoque <= 0) {
-                    document.getElementById('msgErro').textContent = `✗ Sem estoque: ${implante}`;
+                    document.getElementById('msgErro').textContent = `â Sem estoque: ${implante}`;
                     document.getElementById('msgErro').classList.add('show');
                     setTimeout(() => document.getElementById('msgErro').classList.remove('show'), 3000);
                     return;
@@ -488,7 +498,7 @@
             const qtd = parseInt(document.getElementById('qtdEstoque').value);
 
             if (!tamanho || !qtd || qtd < 0) {
-                alert('Selecione o tamanho e quantidade válida');
+                alert('Selecione o tamanho e quantidade vÃ¡lida');
                 return;
             }
 
@@ -556,12 +566,12 @@
             document.getElementById('totalCir').textContent = filtrado.length;
             document.getElementById('normalCir').textContent = filtrado.filter(c => c.tipo === 'Normal').length;
             document.getElementById('perdaCir').textContent = filtrado.filter(c => c.tipo === 'Perda').length;
-            document.getElementById('repCir').textContent = filtrado.filter(c => c.tipo === 'Repetição').length;
+            document.getElementById('repCir').textContent = filtrado.filter(c => c.tipo === 'RepetiÃ§Ã£o').length;
 
             const tipoCounts = {
                 'Normal': filtrado.filter(c => c.tipo === 'Normal').length,
                 'Perda': filtrado.filter(c => c.tipo === 'Perda').length,
-                'Repetição': filtrado.filter(c => c.tipo === 'Repetição').length
+                'RepetiÃ§Ã£o': filtrado.filter(c => c.tipo === 'RepetiÃ§Ã£o').length
             };
 
             if (graficos.dashboard) graficos.dashboard.destroy();
@@ -584,7 +594,7 @@
         function gerarRelatorio() {
             const mes = document.getElementById('filtroMes').value;
             if (!mes) {
-                alert('Selecione um mês');
+                alert('Selecione um mÃªs');
                 return;
             }
 
@@ -644,7 +654,7 @@
         }
 
         function atualizarPacientes() {
-            const viamao = cirurgias.filter(c => c.clinica === 'Viamão');
+            const viamao = cirurgias.filter(c => c.clinica === 'ViamÃ£o');
             const esteio = cirurgias.filter(c => c.clinica === 'Esteio');
 
             document.getElementById('pacientesViamao').innerHTML = renderPacientes(viamao);
@@ -667,6 +677,7 @@
                             <strong>Implantes:</strong> ${impl}
                             ${c.obs ? `<br/><strong>Obs:</strong> ${c.obs}` : ''}
                         </div>
+                        <button class="btn-edit" onclick="abrirModalEdicao('${c.id}')">&#x270F; Editar</button>
                     </div>
                 `;
             }).join('');
@@ -681,11 +692,11 @@
             const dados = cirurgias.map(c => ({
                 'Nome': c.nome,
                 'Data': c.data,
-                'Clínica': c.clinica,
+                'ClÃ­nica': c.clinica,
                 'Procedimento': c.procedimento,
                 'Tipo': c.tipo,
                 'Implantes': c.implantes ? c.implantes.join(', ') : '',
-                'Observações': c.obs || ''
+                'ObservaÃ§Ãµes': c.obs || ''
             }));
 
             const planilha = XLSX.utils.json_to_sheet(dados);
@@ -699,7 +710,7 @@
             atualizarPacientes();
         }
 
-        // ===== PERSISTÊNCIA =====
+        // ===== PERSISTÃNCIA =====
         function salvarDados() {
             db.ref('controle_cirurgias').set({
                 cirurgias: cirurgias,
@@ -736,12 +747,167 @@
             });
         }
 
-        // Data padrão
+        // Data padrÃ£o
         const hoje = new Date();
         const mes = hoje.getFullYear() + '-' + String(hoje.getMonth() + 1).padStart(2, '0');
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('filtroMes').value = mes;
         });
-    </script>
+    
+        // ===== EDIÇÃO DE PACIENTES =====
+        let editandoId = null;
+        let editImplantesAtual = [];
+
+        function abrirModalEdicao(id) {
+            const cirurgia = cirurgias.find(c => String(c.id) === String(id));
+            if (!cirurgia) return;
+            editandoId = id;
+            editImplantesAtual = cirurgia.implantes ? [...cirurgia.implantes] : [];
+
+            document.getElementById('editNome').value = cirurgia.nome || '';
+            document.getElementById('editData').value = cirurgia.data || '';
+            document.getElementById('editClinica').value = cirurgia.clinica || 'viamao';
+            document.getElementById('editProcedimento').value = cirurgia.procedimento || 'Implante';
+            document.getElementById('editTipo').value = cirurgia.tipo || 'Normal';
+            document.getElementById('editObs').value = cirurgia.obs || '';
+            atualizarGridEdicao();
+            document.getElementById('modalEdicao').classList.add('active');
+        }
+
+        function fecharModalEdicao() {
+            document.getElementById('modalEdicao').classList.remove('active');
+            editandoId = null;
+            editImplantesAtual = [];
+        }
+
+        function adicionarImplanteEdicao() {
+            const select = document.getElementById('editSelectImplante');
+            const tamanho = select.value;
+            if (!tamanho) return;
+            editImplantesAtual.push(tamanho);
+            atualizarGridEdicao();
+            select.value = '';
+        }
+
+        function removerImplanteEdicao(idx) {
+            editImplantesAtual.splice(idx, 1);
+            atualizarGridEdicao();
+        }
+
+        function atualizarGridEdicao() {
+            const grid = document.getElementById('editImplantesGrid');
+            if (!grid) return;
+            grid.innerHTML = editImplantesAtual.map((impl, i) => '<span style="display:inline-flex;align-items:center;background:#87CEEB;color:white;padding:3px 8px;border-radius:4px;font-size:11px;gap:6px">' +
+                impl + '<span style="cursor:pointer;font-weight:bold" onclick="removerImplanteEdicao(' + i + ')">&#x2715;</span></span>').join('');
+        }
+
+        function salvarEdicao() {
+            if (!editandoId) return;
+            const idx = cirurgias.findIndex(c => String(c.id) === String(editandoId));
+            if (idx < 0) return;
+
+            const nome = document.getElementById('editNome').value.trim();
+            const data = document.getElementById('editData').value;
+            const clinica = document.getElementById('editClinica').value;
+            const procedimento = document.getElementById('editProcedimento').value;
+            const tipo = document.getElementById('editTipo').value;
+            const obs = document.getElementById('editObs').value.trim();
+
+            if (!nome || !data) {
+                alert('Nome e data são obrigatórios');
+                return;
+            }
+
+            cirurgias[idx] = Object.assign({}, cirurgias[idx], {
+                nome: nome, data: data, clinica: clinica, procedimento: procedimento, tipo: tipo,
+                implantes: editImplantesAtual.slice(),
+                obs: obs
+            });
+
+            salvarDados();
+            atualizar();
+            fecharModalEdicao();
+            alert('Paciente atualizado com sucesso!');
+        }
+
+        document.addEventListener('click', function(e) {
+            const modal = document.getElementById('modalEdicao');
+            if (e.target === modal) fecharModalEdicao();
+        });
+
+        </script>
+
+    <!-- Modal de Edição de Paciente -->
+    <div class="modal-overlay" id="modalEdicao">
+        <div class="modal-box">
+            <button class="modal-close" onclick="fecharModalEdicao()">&#x2715;</button>
+            <h3>&#x270F;&#xFE0F; Editar Paciente</h3>
+            <div class="form-group">
+                <label>Nome do Paciente</label>
+                <input type="text" id="editNome" class="form-control" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;font-size:13px">
+            </div>
+            <div class="form-group" style="margin-top:10px">
+                <label>Data da Cirurgia</label>
+                <input type="date" id="editData" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;font-size:13px">
+            </div>
+            <div class="form-group" style="margin-top:10px">
+                <label>Clínica</label>
+                <select id="editClinica" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;font-size:13px">
+                    <option value="viamao">Viamão</option>
+                    <option value="esteio">Esteio</option>
+                </select>
+            </div>
+            <div class="form-group" style="margin-top:10px">
+                <label>Procedimento</label>
+                <select id="editProcedimento" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;font-size:13px">
+                    <option value="Levantamento de seio">Levantamento de seio</option>
+                    <option value="Implante">Implante</option>
+                    <option value="Extração + Implante">Extração + Implante</option>
+                    <option value="Implante + Levantamento de seio + Exo">Implante + Levantamento de seio + Exo</option>
+                </select>
+            </div>
+            <div class="form-group" style="margin-top:10px">
+                <label>Tipo de Cirurgia</label>
+                <select id="editTipo" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;font-size:13px">
+                    <option value="Normal">Normal</option>
+                    <option value="Perda">Perda</option>
+                    <option value="Repetição">Repetição</option>
+                </select>
+            </div>
+            <div class="form-group" style="margin-top:10px">
+                <label>Implantes</label>
+                <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+                    <select id="editSelectImplante" style="flex:1;padding:8px;border:1px solid #ddd;border-radius:4px;font-size:13px">
+                        <option value="">-- Selecione o tamanho --</option>
+                        <option value="3,5 x 7">3,5 x 7</option>
+                            <option value="3,5 x 8">3,5 x 8</option>
+                            <option value="3,5 x 10">3,5 x 10</option>
+                            <option value="3,5 x 11,5">3,5 x 11,5</option>
+                            <option value="3,5 x 13">3,5 x 13</option>
+                            <option value="3,5 x 16">3,5 x 16</option>
+                            <option value="3,75 x 7">3,75 x 7</option>
+                            <option value="3,75 x 9">3,75 x 9</option>
+                            <option value="3,75 x 11">3,75 x 11</option>
+                            <option value="4 x 7">4 x 7</option>
+                            <option value="4 x 9">4 x 9</option>
+                            <option value="4,3 x 8">4,3 x 8</option>
+                            <option value="4,3 x 10">4,3 x 10</option>
+                            <option value="4,3 x 11,5">4,3 x 11,5</option>
+                            <option value="4,3 x 13">4,3 x 13</option>
+                    </select>
+                    <button type="button" onclick="adicionarImplanteEdicao()" style="padding:8px 12px;background:#87CEEB;color:white;border:none;border-radius:4px;cursor:pointer">+</button>
+                </div>
+                <div id="editImplantesGrid" style="display:flex;flex-wrap:wrap;gap:6px;min-height:24px"></div>
+            </div>
+            <div class="form-group" style="margin-top:10px">
+                <label>Observações</label>
+                <textarea id="editObs" rows="3" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;font-size:13px;resize:vertical"></textarea>
+            </div>
+            <div style="margin-top:15px;text-align:right;display:flex;gap:8px;justify-content:flex-end">
+                <button type="button" onclick="fecharModalEdicao()" style="padding:8px 16px;background:#999;color:white;border:none;border-radius:4px;cursor:pointer">Cancelar</button>
+                <button type="button" onclick="salvarEdicao()" style="padding:8px 16px;background:#5cb85c;color:white;border:none;border-radius:4px;cursor:pointer">&#x2713; Salvar</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
