@@ -159,6 +159,8 @@
                                 <option value="Implante">Implante</option>
                                 <option value="Extração + Implante">Extração + Implante</option>
                                 <option value="Implante + Levantamento de seio + Exo">Implante + Levantamento de seio + Exo</option>
+                                <option value="Enxerto">Enxerto</option>
+                                <option value="Enxerto + Extração + Implante">Enxerto + Extração + Implante</option>
                             </select>
                         </div>
 
@@ -234,6 +236,10 @@
                         </div>
                     </div>
 
+                    <div id="secaoProcedimentos" style="margin-top:20px;margin-bottom:10px">
+                        <h3 style="margin-bottom:12px;color:#2c3e50;font-size:15px;border-bottom:2px solid #e8ecef;padding-bottom:8px">&#128202; Divisão por Tipo de Procedimento</h3>
+                        <div id="tabelaProcedimentos" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px"></div>
+                    </div>
                     <div class="chart-container">
                         <canvas id="graficoDashboard"></canvas>
                     </div>
@@ -298,6 +304,14 @@
 
             <!-- ABA 5: PACIENTES -->
             <div id="aba5" class="tab-pane">
+                <div class="card" style="margin-bottom:16px">
+                    <h2>&#128269; Buscar Paciente</h2>
+                    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:8px">
+                        <input type="text" id="searchPaciente" placeholder="Digite o nome do paciente..." style="flex:1;min-width:200px;padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:14px;outline:none" oninput="filtrarPacientes()" />
+                        <button onclick="limparBusca()" style="padding:10px 18px;background:#e74c3c;color:white;border:none;border-radius:8px;cursor:pointer;font-size:14px">&#10005; Limpar</button>
+                    </div>
+                    <div id="resultadoBusca" style="margin-top:12px"></div>
+                </div>
                 <div class="card">
                     <h2>Pacientes - Viamão</h2>
                     <div id="pacientesViamao" class="patient-list"></div>
@@ -828,7 +842,70 @@
         document.addEventListener('click', function(e) {
             if (e.target === document.getElementById('modalEdicao')) fecharModalEdicao();
         });
-        </script>
+        
+        // ===== DIVISAO POR PROCEDIMENTO NO DASHBOARD =====
+        function atualizarTabelaProcedimentos() {
+            var filtrado = cirurgias;
+            if (filtroClinicaAtual && filtroClinicaAtual !== 'todos') {
+                filtrado = cirurgias.filter(c => c.clinica && c.clinica.toLowerCase() === filtroClinicaAtual.toLowerCase());
+            }
+            var contagem = {};
+            filtrado.forEach(c => { var proc = c.procedimento || 'Não informado'; contagem[proc] = (contagem[proc] || 0) + 1; });
+            var total = filtrado.length;
+            var cores = {'Implante':'#4CAF50','Extração + Implante':'#2196F3','Levantamento de seio':'#FF9800','Implante + Levantamento de seio + Exo':'#9C27B0','Enxerto':'#E91E63','Enxerto + Extração + Implante':'#00BCD4'};
+            var tabela = document.getElementById('tabelaProcedimentos');
+            if (!tabela) return;
+            var tbl = '';
+            var sorted = Object.keys(contagem).sort((a, b) => contagem[b] - contagem[a]);
+            sorted.forEach(proc => {
+                var cnt = contagem[proc]; var pct = total > 0 ? Math.round((cnt/total)*100) : 0; var cor = cores[proc] || '#607D8B';
+                tbl += '<div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:12px;border-left:4px solid '+cor+'"><div style="font-size:22px;font-weight:bold;color:'+cor+'">'+cnt+'</div><div style="font-size:12px;color:#666;margin-top:2px">'+proc+'</div><div style="font-size:11px;color:#999;margin-top:4px">'+pct+'% do total</div></div>';
+            });
+            tbl += '<div style="background:#37474F;border-radius:8px;padding:12px;color:white"><div style="font-size:22px;font-weight:bold">'+total+'</div><div style="font-size:12px;margin-top:2px;opacity:0.85">Total Geral</div><div style="font-size:11px;margin-top:4px;opacity:0.7">100% de todas as cirurgias</div></div>';
+            tabela.innerHTML = tbl;
+        }
+
+        // ===== BUSCA DE PACIENTES =====
+        function filtrarPacientes() {
+            var input = document.getElementById('searchPaciente');
+            var termo = (input ? input.value : '').toLowerCase().trim();
+            var resultado = document.getElementById('resultadoBusca');
+            var cards = document.querySelectorAll('#aba5 .card');
+            if (!termo) {
+                resultado.innerHTML = '';
+                document.getElementById('pacientesViamao').style.display = '';
+                document.getElementById('pacientesEsteio').style.display = '';
+                cards.forEach((c, i) => { if (i > 0) c.style.display = ''; });
+                return;
+            }
+            document.getElementById('pacientesViamao').style.display = 'none';
+            document.getElementById('pacientesEsteio').style.display = 'none';
+            cards.forEach((c, i) => { if (i > 0) c.style.display = 'none'; });
+            var encontrados = cirurgias.filter(c => c.nome && c.nome.toLowerCase().includes(termo));
+            encontrados.sort((a, b) => new Date(b.data) - new Date(a.data));
+            if (encontrados.length === 0) {
+                resultado.innerHTML = '<div style="padding:16px;color:#999;text-align:center">Nenhum paciente encontrado.</div>';
+                return;
+            }
+            var res = '<div style="color:#555;font-size:13px;margin-bottom:10px">&#10003; ' + encontrados.length + ' resultado(s) encontrado(s)</div>';
+            encontrados.forEach(c => {
+                var implStr = (c.implantes && c.implantes.length) ? c.implantes.join(', ') : 'Nenhum';
+                var dataFmt = c.data ? new Date(c.data+'T12:00:00').toLocaleDateString('pt-BR') : '';
+                var tipoCor = c.tipo==='Normal'?'#27ae60':c.tipo==='Perda'?'#e74c3c':'#f39c12';
+                res += '<div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:14px;margin-bottom:10px;border-left:4px solid #2980b9">';
+                res += '<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px"><strong style="font-size:15px;color:#2c3e50">'+c.nome+'</strong><span style="background:#eaf4fd;color:#2980b9;padding:3px 8px;border-radius:12px;font-size:12px">'+(c.clinica||'')+'</span></div>';
+                res += '<div style="color:#666;font-size:13px;margin-top:6px">'+dataFmt+' &bull; '+(c.procedimento||'')+' &bull; <span style="color:'+tipoCor+'">'+（c.tipo||'')+'</span></div>';
+                res += '<div style="font-size:12px;color:#888;margin-top:4px">Implantes: '+implStr+'</div>';
+                if (c.obs) res += '<div style="font-size:12px;color:#888;margin-top:2px">Obs: '+c.obs+'</div>';
+                res += '<button onclick="abrirModalEdicao('+c.id+')" style="margin-top:8px;padding:5px 12px;background:#3498db;color:white;border:none;border-radius:6px;cursor:pointer;font-size:12px">✏️ Editar</button></div>';
+            });
+            resultado.innerHTML = res;
+        }
+        function limparBusca() { var i = document.getElementById('searchPaciente'); if(i) i.value=''; filtrarPacientes(); }
+        var _origADB = atualizarDashboard;
+        window.atualizarDashboard = function() { _origADB(); if(typeof atualizarTabelaProcedimentos==='function') atualizarTabelaProcedimentos(); };
+
+</script>
 
     <!-- Modal Edição -->
     <div class="modal-overlay" id="modalEdicao">
@@ -849,6 +926,8 @@
                 <option value="Implante">Implante</option>
                 <option value="Extração + Implante">Extração + Implante</option>
                 <option value="Implante + Levantamento de seio + Exo">Implante + Levantamento de seio + Exo</option>
+            <option value="Enxerto">Enxerto</option>
+            <option value="Enxerto + Extração + Implante">Enxerto + Extração + Implante</option>
             </select></div>
             <div class="form-group" style="margin-top:10px"><label>Tipo</label>
             <select id="editTipo" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:4px;font-size:13px;margin-top:4px">
