@@ -43,11 +43,12 @@ function local(){
 }
 function atualizar(){sels();dash();listagem();}
 function sels(){
-  var t=new Set(MATS);for(var k in est){var p=k.split(':');if(p[1])t.add(p[1]);}
+  var t=new Set();for(var k in est){var p=k.split(':');if(p[1])t.add(p[1]);}
   var l=Array.from(t).sort();
   ['consumoMaterial','estoqueMaterial'].forEach(function(id){
-    var s=document.getElementById(id);s.innerHTML='<option value="">-- Selecione --</option>';
+    var s=document.getElementById(id);var cv=s.value;s.innerHTML='<option value="">-- Selecione --</option>';
     l.forEach(function(m){var o=document.createElement('option');o.value=m;o.textContent=m;s.appendChild(o);});
+    if(cv&&Array.from(s.options).some(function(o){return o.value===cv;})){s.value=cv;}
   });editSel();
 }
 function editSel(){
@@ -61,14 +62,32 @@ function msg(id){var e=document.getElementById(id);e.classList.add('show');setTi
 function registrarConsumo(e){
   e.preventDefault();
   var dt=document.getElementById('consumoData').value,ms=dt.substring(0,7);
+  var clinica=document.querySelector('input[name="consumoClinica"]:checked').value;
+  var material=document.getElementById('consumoMaterial').value;
+  var qtd=parseInt(document.getElementById('consumoQtd').value);
   if(!cons[ms])cons[ms]={};
-  cons[ms][Date.now()]={material:document.getElementById('consumoMaterial').value,data:dt,qtd:parseInt(document.getElementById('consumoQtd').value),clinica:document.querySelector('input[name="consumoClinica"]:checked').value,timestamp:Date.now()};
+  cons[ms][Date.now()]={material:material,data:dt,qtd:qtd,clinica:clinica,timestamp:Date.now()};
+  var estKey=clinica+':'+material;
+  if(est[estKey]!==undefined){est[estKey]=Math.max(0,est[estKey]-qtd);}
   salvar();msg('msgConsumoSucesso');document.getElementById('formConsumo').reset();
-  document.getElementById('consumoData').value=new Date().toISOString().split('T')[0];dash();
+  document.getElementById('consumoData').value=new Date().toISOString().split('T')[0];dash();listagem();
 }
 function adicionarEstoque(e){e.preventDefault();var c=document.querySelector('input[name="estoqueClinica"]:checked').value,m=document.getElementById('estoqueMaterial').value,q=parseInt(document.getElementById('estoqueQtd').value);est[c+':'+m]=q;salvar();msg('msgEstoqueSucesso');document.getElementById('formEstoque').reset();listagem();}
 function cadastrarNovoMaterial(e){e.preventDefault();var c=document.querySelector('input[name="novoMaterialClinica"]:checked').value,m=document.getElementById('novoMaterialNome').value.trim(),q=parseInt(document.getElementById('novoMaterialQtd').value)||0;est[c+':'+m]=q;salvar();msg('msgNovoSucesso');document.getElementById('formNovoMaterial').reset();sels();}
-function editarNomeMaterial(e){e.preventDefault();var c=document.querySelector('input[name="editarClinica"]:checked').value,ma=document.getElementById('materialAtual').value,nn=document.getElementById('novoNomeMaterial').value.trim(),q=est[c+':'+ma]||0;delete est[c+':'+ma];est[c+':'+nn]=q;salvar();msg('msgEditarSucesso');document.getElementById('formEditarMaterial').reset();editSel();}
+function editarNomeMaterial(e){
+  e.preventDefault();
+  var c=document.querySelector('input[name="editarClinica"]:checked').value;
+  var ma=document.getElementById('materialAtual').value;
+  var nn=document.getElementById('novoNomeMaterial').value.trim();
+  if(!ma||!nn)return;
+  if(ma===nn){msg('msgEditarSucesso');document.getElementById('formEditarMaterial').reset();editSel();return;}
+  var oldKey=c+':'+ma,newKey=c+':'+nn;
+  if(est[oldKey]!==undefined){est[newKey]=est[oldKey];delete est[oldKey];}
+  var matsIdx=MATS.indexOf(ma);
+  if(matsIdx!==-1){MATS[matsIdx]=nn;}else if(!MATS.includes(nn)){MATS.push(nn);}
+  for(var mes in cons){for(var ts in cons[mes]){var entry=cons[mes][ts];if(entry.material===ma&&entry.clinica===c){entry.material=nn;}}}
+  salvar();msg('msgEditarSucesso');document.getElementById('formEditarMaterial').reset();editSel();sels();
+}
 function dash(){
   var a=new Date(),ms=a.getFullYear()+'-'+String(a.getMonth()+1).padStart(2,'0');
   var l=cons[ms]?Object.values(cons[ms]):[];
