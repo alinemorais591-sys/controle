@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Controle de Materiais - Firebase Sync</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js"></script>
+  <!-- Firebase compat SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; color: #333; }
+    .header { background: linear-gradient(135deg, #87CEEB, #5DADE2); color: white; padding: 15px; text-align: center; }
+    .header h1 { font-size: 20px; margin-bottom: 5px; }
+    .header p { font-size: 12px; opacity: .95; }
+    .status { font-size: 11px; margin-top: 8px; padding: 8px; border-radius: 4px; background: #28a745; color: white; }
+    .status.offline { background: #dc3545; }
+    .tabs-nav { display: flex; background: white; border-bottom: 3px solid #FFC107; overflow-x: auto; position: sticky; top: 0; z-index: 100; }
+    .tab-link { flex: 1; min-width: 70px; padding: 12px 8px; background: white; border: none; border-bottom: 3px solid white; cursor: pointer; font-size: 11px; font-weight: 600; color: #666; text-align: center; }
+    .tab-link.active { color: white; background: #87CEEB; border-bottom-color: #FFC107; }
+    .content { padding: 15px; }
+    .tab-pane { display: none !important; }
+    .tab-pane.active { display: block !important; }
+    .card { background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,.1); margin-bottom: 15px; border-top: 4px solid #87CEEB; }
+    .card h2 { color: #1F4E78; font-size: 14px; margin-bottom: 12px; border-bottom: 2px solid #FFC107; padding-bottom: 8px; }
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-weight: 500; font-size: 12px; margin-bottom: 6px; }
+    input, select { width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px; font-family: inherit; }
+    input:focus, select:focus { outline: 0; border-color: #87CEEB; }
+    .radio-group { display: flex; flex-direction: column; gap: 8px; }
+    .radio-item { display: flex; align-items: center; padding: 8px; border: 2px solid #ddd; border-radius: 6px; cursor: pointer; }
+    .radio-item input { margin-right: 10px; width: 18px; height: 18px; accent-color: #87CEEB; }
+    .radio-item:has(input:checked) { border-color: #87CEEB; background: #f0f8ff; }
+    .btn-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+    .btn { padding: 12px; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
+    .btn-submit { background: #87CEEB; color: white; }
+    .btn-reset { background: #f0f0f0; color: #333; }
+    .btn-remove { background: #dc3545; color: white; padding: 4px 8px; font-size: 10px; margin-left: 8px; border: none; border-radius: 4px; cursor: pointer; }
+    .success-msg { display: none; background: #d4edda; color: #155724; padding: 10px; border-radius: 6px; margin-bottom: 10px; font-size: 12px; border-left: 4px solid #28a745; }
+    .success-msg.show { display: block; }
+    .error-msg { display: none; background: #f8d7da; color: #721c24; padding: 10px; border-radius: 6px; margin-bottom: 10px; font-size: 12px; border-left: 4px solid #dc3545; }
+    .error-msg.show { display: block; }
+    .item-list { background: #f0f8ff; padding: 10px; border-radius: 6px; margin-bottom: 8px; border-left: 4px solid #87CEEB; display: flex; justify-content: space-between; align-items: center; }
+    .item-material { font-weight: 600; color: #333; font-size: 12px; flex: 1; }
+    .item-qtd { font-size: 13px; color: #87CEEB; font-weight: 600; margin-right: 10px; }
+    .empty-state { text-align: center; padding: 30px 15px; color: #999; font-size: 13px; }
+    .info-box { background: #e7f3ff; padding: 10px; border-radius: 6px; margin-bottom: 10px; font-size: 11px; color: #004085; border-left: 4px solid #87CEEB; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    @media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📦 Controle de Materiais - Firebase</h1>
+  <p>Sistema de Controle de Estoque - Sincronizado em Tempo Real</p>
+  <div class="status" id="statusConexao">🔄 Conectando ao Firebase...</div>
+</div>
+
+<div class="tabs-nav">
+  <button class="tab-link active" data-tab="aba1">📝 Consumo</button>
+  <button class="tab-link" data-tab="aba2">📊 Dashboard</button>
+  <button class="tab-link" data-tab="aba3">📦 Estoque</button>
+  <button class="tab-link" data-tab="aba3b">🔧 Componentes</button>
+  <button class="tab-link" data-tab="aba5">🛒 Sugestão de Compra</button>
+</div>
+
+<div class="content">
+
+  <!-- ABA 1: CONSUMO -->
+  <div id="aba1" class="tab-pane active">
+    <div class="card">
+      <h2>Registrar Consumo de Material</h2>
+      <div class="success-msg" id="msgConsumoSucesso">✓ Consumo registrado!</div>
+      <div class="error-msg" id="msgErroConsumo">✗ Erro ao registrar consumo!</div>
+      <div class="info-box">⚠️ Você só pode registrar consumo se houver material em estoque</div>
+      <form id="formConsumo" onsubmit="registrarConsumo(event)">
+        <div class="form-group">
+          <label>Clínica <span style="color:#FFC107">*</span></label>
+          <div class="radio-group">
+            <div class="radio-item"><input type="radio" id="cons1" name="consumoClinica" value="Esteio" required checked><label for="cons1">Esteio</label></div>
+            <div class="radio-item"><input type="radio" id="cons2" name="consumoClinica" value="Viamão"><label for="cons2">Viamão</label></div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Material <span style="color:#FFC107">*</span></label>
+          <select id="consumoMaterial" required onchange="atualizarEstoqueAtual()"><option value="">-- Selecione --</option></select>
+        </div>
+        <div class="form-group">
+          <label>Estoque Atual</label>
+          <input type="text" id="estoqueAtual" readonly style="background:#f0f0f0;color:#666">
+        </div>
+        <div class="form-group">
+          <label>Data <span style="color:#FFC107">*</span></label>
+          <input type="date" id="consumoData" required>
+        </div>
+        <div class="form-group">
+          <label>Quantidade <span style="color:#FFC107">*</span></label>
+          <input type="number" id="consumoQtd" min="1" required>
+        </div>
+        <div class="btn-container">
+          <button type="submit" class="btn btn-submit">Registrar</button>
+          <button type="reset" class="btn btn-reset">Limpar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ABA 2: DASHBOARD -->
+  <div id="aba2" class="tab-pane">
+    <div class="card">
+      <h2>Resumo do Mês</h2>
+      <div class="form-group">
+        <label>Mês</label>
+        <input type="month" id="mesEscolhido">
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <h3 style="color:#1F4E78;margin-bottom:10px">Esteio</h3>
+        <div id="dashboardEsteio"><div class="empty-state">Nenhum consumo</div></div>
+      </div>
+      <div class="card">
+        <h3 style="color:#1F4E78;margin-bottom:10px">Viamão</h3>
+        <div id="dashboardViamao"><div class="empty-state">Nenhum consumo</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ABA 3: ESTOQUE -->
+  <div id="aba3" class="tab-pane">
+    <div class="card">
+      <h2>Registrar Estoque</h2>
+      <div class="success-msg" id="msgEstoqueSucesso">✓ Estoque registrado!</div>
+      <form id="formEstoque" onsubmit="adicionarEstoque(event)">
+        <div class="form-group">
+          <label>Clínica <span style="color:#FFC107">*</span></label>
+          <div class="radio-group">
+            <div class="radio-item"><input type="radio" id="est1" name="estoqueClinica" value="Esteio" required checked><label for="est1">Esteio</label></div>
+            <div class="radio-item"><input type="radio" id="est2" name="estoqueClinica" value="Viamão"><label for="est2">Viamão</label></div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Material <span style="color:#FFC107">*</span></label>
+          <select id="estoqueMaterial" required><option value="">-- Selecione --</option></select>
+        </div>
+        <div class="form-group">
+          <label>Quantidade <span style="color:#FFC107">*</span></label>
+          <input type="number" id="estoqueQtd" min="0" required>
+        </div>
+        <div class="btn-container">
+          <button type="submit" class="btn btn-submit">Atualizar</button>
+          <button type="reset" class="btn btn-reset">Limpar</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>📦 Estoque - Viamão</h2>
+      <div id="listaEstoqueViamao"><div class="empty-state">Carregando...</div></div>
+    </div>
+
+    <div class="card">
+      <h2>📦 Estoque - Esteio</h2>
+      <div id="listaEstoqueEsteio"><div class="empty-state">Carregando...</div></div>
+    </div>
+  </div>
+
+  <!-- ABA 3B: COMPONENTES -->
+  <div id="aba3b" class="tab-pane">
+    <div class="card">
+      <h2>Registrar Componentes</h2>
+      <div class="success-msg" id="msgComponenteSucesso">✓ Componente registrado!</div>
+      <form id="formComponente" onsubmit="adicionarComponente(event)">
+        <div class="form-group">
+          <label>Clínica <span style="color:#FFC107">*</span></label>
+          <div class="radio-group">
+            <div class="radio-item"><input type="radio" id="comp1" name="componenteClinica" value="Esteio" required checked><label for="comp1">Esteio</label></div>
+            <div class="radio-item"><input type="radio" id="comp2" name="componenteClinica" value="Viamão"><label for="comp2">Viamão</label></div>
+          </div>
+        </div>
+        <div class="form-group"><label>Componente <span style="color:#FFC107">*</span></label><select id="componenteMaterial" required><option value="">-- Selecione --</option></select></div>
+        <div class="form-group"><label>Quantidade <span style="color:#FFC107">*</span></label><input type="number" id="componenteQtd" min="0" required></div>
+        <div class="btn-container"><button type="submit" class="btn btn-submit">Adicionar</button><button type="reset" class="btn btn-reset">Limpar</button></div>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>📦 Componentes - Esteio</h2>
+      <div id="listaComponentesEsteio"><div class="empty-state">Carregando...</div></div>
+    </div>
+
+    <div class="card">
+      <h2>📦 Componentes - Viamão</h2>
+      <div id="listaComponentesViamao"><div class="empty-state">Carregando...</div></div>
+    </div>
+  </div>
+
+  <!-- ABA 5: SUGESTÃO -->
+  <div id="aba5" class="tab-pane">
+    <div class="card">
+      <h2>Sugestão de Compra</h2>
+      <form onsubmit="gerarSugestao(event)">
+        <div class="form-group">
+          <label>Clínica <span style="color:#FFC107">*</span></label>
+          <div class="radio-group">
+            <div class="radio-item"><input type="radio" id="sug1" name="sugestaoClinica" value="Esteio" required checked><label for="sug1">Esteio</label></div>
+            <div class="radio-item"><input type="radio" id="sug2" name="sugestaoClinica" value="Viamão"><label for="sug2">Viamão</label></div>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="form-group"><label>Mês</label><input type="month" id="mesSugestao" required></div>
+          <button type="submit" class="btn btn-submit" style="margin-top:30px">Calcular</button>
+        </div>
+      </form>
+    </div>
+    <div class="card"><div id="containerSugestao"><div class="empty-state">Nenhum dado</div></div></div>
+  </div>
+
+</div>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyB-3hwadFpflMaSQ08zUixQpX2Tgv6Q098",
+  authDomain: "clinicascontrolemateriais.firebaseapp.com",
+  databaseURL: "https://clinicascontrolemateriais-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "clinicascontrolemateriais",
+  storageBucket: "clinicascontrolemateriais.firebasestorage.app",
+  messagingSenderId: "778892127113",
+  appId: "1:778892127113:web:bbff91dfe00f733629cf58"
+};
+
+let db = null;
+let est = {}, cons = {}, comp = {}, COMP_LISTA = [];
+let MATS = ["Adesivo Ambar (4ml)","Agulha Gengival Curta","Agulha Hipodérmica 25x40mm (Endo)","Agulha Hipodérmica 25x60mm (Cirurgia)","Alginato Avagel","Anestésico Articaína (cartela c/10)","Anestésico Lidocaína (cx)","Anestésico Mepivacaína (cartela c/10)","Anestésico Tópico","Babador Branco","Banda Matriz 0,5","Banda Matriz 0,7","Barreira Gengival","Bioplic (unidade)","Broca 1012","Broca 1012 Haste Longa","Broca 1014","Broca 1016 Haste Longa (endo)","Broca 2200 Fina","Broca 3053","Broca 3117 Chama","Broca 3118 Chama","Broca 3122","Broca 3200","Broca 4138","Broca Endo Z","Broca FG 118 L (remoção aparelho)","Broca FG 7 (cirurgica esférica)","Broca Zekrya 28mm","Caixas de Aparelho Ortodôntico (unidade)","Cera 7","Cera Utilidade","Cimento Endodôntico (pó + liquido)","Cimento Resinoso","Cimento Resinoso Allcem Core A2","Cimento de Zinco (pó + liquido)","Cimento hydro C","Clareamento Caseiro 16% (unidade)","Clareamento Caseiro 22% (unidade)","Creme Dental Colgate 30g","Creme Dental Sensibilidade 30g","Deskarpack 3l","Deskarpack 7l","Detergente Enzimático","Disco carborundum (10 unidades)","Escova de Dente (brinde)","Escova de Dente (colgate)","Fio Dental","Fio de Sutura 4,0 Nylon Shalon","Fio de Sutura 4.0 Nylon (comum)","Fita Teflon","Gaze","Gesso Branco Tipo II (nao comprar)","Gesso Especia Tipo IV","Gesso Pedra Tipo III","Hipoclorito","Ionomero de Vidro","Kit Cirúrgio","Kit Clareamento de Consultório","Kit Silicona de Adição","Kit Silicona de Condensação Perfil","Lençol de Borracha (unidade)","Lima Rotatoria pro T C/6 Mk Life","Lima manual 31mm nº 10","Lima manual 31mm nº 8","Luva Cirúrgica 7.5","Luva Cirúrgica 8.5","Luva Latex G (cx)","Luva Latex M (cx)","Luva Latex PP (cx)","Lâmina Bisturi 15C","Lâmina de Bisturi 12C","Microbrush","Máscara Descartável (cx)","Obturador Provisório","Orto - Bengalinha Azul bebe","Orto - Bengalinha Azul marinho","Orto - Bengalinha Cinza","Orto - Bengalinha Preta","Orto - Bengalinha Roxa","Orto - Bengalinha Verde Cristal","Orto - Bengalinha Verde Mar","Orto - Braquetes Estéticos (boca)","Orto - Elástico 1x4 pesado","Orto - Elástico 1x8 pesado","Orto - Elástico 3x16 pesado","Orto - Elástico 5x16 pesado","Orto - Elástico Corrente Cinza","Orto - Elástico Corrente Preto","Orto - Embalagem Elástico Ortodôntico (50 unidades)","Orto - Fio NITI 0,12 Inferior","Orto - Fio NITI 0,14 Inferior","Orto - Fio NITI 0,16 Inferior","Orto - Fio NITI 0,16x0,22 inferior","Orto - Fio NITI 0,18 Inferior","Orto - Fio de Aço 0,14 Inferior (não comprar)","Orto - Fio de Aço 0,16 inferior","Orto - Fio de Aço 0,16x0,22 inferior (não comprar)","Orto - Fio de Aço 0,17x0,25 inferior","Orto - Fio de Aço 0,18 Inferior","Orto - Kit Orthocem (Resina + acido)","Papel Carbono Angelus","Papel Grau 10x100","Papel Grau 15x100","Papel Grau 30x100","Papel Grau 5x100","Papel Grau 8x100","Pasta Diamantada de Polimento","Pasta Lysanda","Pasta Profilática (menta)","Perfil Bisnaga Catalyst","Perfil Bisnaga Light Body","Periogard","Pino de fibra de vidro","Pino vermelho","Placa de Acetato 1mm","Placa de Clareamento","Resina Acrilica cor 60","Resina Acrilica cor 66","Resina Acrilica líquido monomero","Resina Acrilica rosa","Resina Charisma A1","Resina Charisma A2","Resina Charisma A3","Resina Charisma A3.5","Resina Charisma B1","Resina Charisma B2","Resina Flow A2","Resina Forma A1D","Resina Forma A2D","Resina Forma A3,5D","Resina Forma B1E","Resina Forma BL1","Resina Forma WE","Resina Omnichroma","Resina Pattern TVD","Resinna Forma B1B","Rolete Algodão","Seringa Descartável 20 ml","Silano","Soft Rebase","Soro Fisiológico 500ml","Sugador Cirúrgico (unidade)","Sugador Comum","Sugador Endodôntico (unidadade)","Tira de Lixa Aço Abrasiva","Tira de Lixa de Poliéster","Tira de Matriz de Poliester","Touca Descartável","Tricresol","Vaselina Sólida","Ácido Fosfórico 37% (unidade)","Ácido Porcelana 10% (unidade)"];
+
+// Inicializar Firebase
+try {
+  firebase.initializeApp(firebaseConfig);
+  db = firebase.database();
+  document.getElementById('statusConexao').textContent = '✓ Conectado e sincronizando com Firebase em tempo real';
+  document.getElementById('statusConexao').style.background = '#28a745';
+} catch(e) {
+  document.getElementById('statusConexao').textContent = '❌ Erro ao conectar com Firebase';
+  document.getElementById('statusConexao').classList.add('offline');
+}
+
+function carregarDadosFirebase() {
+  db.ref('materiais').on('value', snap => { est = snap.val() || {}; listarEstoque(); });
+  db.ref('consumos').on('value', snap => { cons = snap.val() || {}; });
+  db.ref('componentes').on('value', snap => { comp = snap.val() || {}; listarComponentes(); });
+  db.ref('COMP_LISTA').on('value', snap => { COMP_LISTA = snap.val() || []; sels(); });
+  sels();
+}
+
+function sels() {
+  var lista = MATS.slice().sort();
+  ['consumoMaterial','estoqueMaterial'].forEach(id => {
+    var sel = document.getElementById(id);
+    sel.innerHTML = '<option value="">-- Selecione --</option>';
+    lista.forEach(m => {
+      var opt = document.createElement('option');
+      opt.value = m;
+      opt.textContent = m;
+      sel.appendChild(opt);
+    });
+  });
+  var compSel = document.getElementById('componenteMaterial');
+  compSel.innerHTML = '<option value="">-- Selecione --</option>';
+  COMP_LISTA.sort().forEach(m => {
+    var opt = document.createElement('option');
+    opt.value = m;
+    opt.textContent = m;
+    compSel.appendChild(opt);
+  });
+}
+
+function atualizarEstoqueAtual() {
+  var material = document.getElementById('consumoMaterial').value;
+  var clinica = document.querySelector('input[name="consumoClinica"]:checked').value;
+  var qtd = (est[clinica+':'+material] || 0);
+  document.getElementById('estoqueAtual').value = qtd + ' un';
+}
+
+function registrarConsumo(event) {
+  event.preventDefault();
+  var material = document.getElementById('consumoMaterial').value;
+  var qtd = parseInt(document.getElementById('consumoQtd').value);
+  var clinica = document.querySelector('input[name="consumoClinica"]:checked').value;
+  var estoqueAtual = (est[clinica+':'+material] || 0);
+
+  if (!material) { alert('Selecione um material'); return; }
+  if (qtd <= 0) { alert('Quantidade inválida'); return; }
+  if (estoqueAtual === 0) {
+    document.getElementById('msgErroConsumo').innerHTML = '✗ Sem estoque';
+    msg('msgErroConsumo');
+    return;
+  }
+  if (qtd > estoqueAtual) {
+    document.getElementById('msgErroConsumo').innerHTML = '✗ Quantidade maior que estoque';
+    msg('msgErroConsumo');
+    return;
+  }
+
+  var mes = document.getElementById('consumoData').value.substring(0,7);
+  if (!cons[mes]) cons[mes] = {};
+  var id = Date.now().toString();
+  cons[mes][id] = { material, qtd, clinica, data: document.getElementById('consumoData').value, timestamp: Date.now() };
+
+  est[clinica+':'+material] = estoqueAtual - qtd;
+  db.ref('consumos/' + mes).set(cons[mes]);
+  db.ref('materiais/' + clinica + ':' + material).set(est[clinica+':'+material]);
+
+  msg('msgConsumoSucesso');
+  document.getElementById('formConsumo').reset();
+  document.getElementById('consumoData').value = new Date().toISOString().split('T')[0];
+}
+
+function adicionarEstoque(event) {
+  event.preventDefault();
+  var clinica = document.querySelector('input[name="estoqueClinica"]:checked').value;
+  var material = document.getElementById('estoqueMaterial').value;
+  var qtd = parseInt(document.getElementById('estoqueQtd').value);
+
+  est[clinica+':'+material] = qtd;
+  db.ref('materiais/' + clinica + ':' + material).set(qtd);
+
+  msg('msgEstoqueSucesso');
+  document.getElementById('formEstoque').reset();
+}
+
+function adicionarComponente(event) {
+  event.preventDefault();
+  var clinica = document.querySelector('input[name="componenteClinica"]:checked').value;
+  var material = document.getElementById('componenteMaterial').value;
+  var qtd = parseInt(document.getElementById('componenteQtd').value);
+
+  comp[clinica+':'+material] = qtd;
+  db.ref('componentes/' + clinica + ':' + material).set(qtd);
+
+  msg('msgComponenteSucesso');
+  document.getElementById('formComponente').reset();
+}
+
+function listarEstoque() {
+  ['Viamão', 'Esteio'].forEach(cli => {
+    var mats = Object.keys(est).filter(k => k.startsWith(cli+':')).map(k => k.substring(cli.length+1)).sort();
+    var html = '';
+    if (mats.length === 0) {
+      html = '<div class="empty-state">Sem materiais</div>';
+    } else {
+      mats.forEach(m => {
+        var q = est[cli+':'+m];
+        html += '<div class="item-list"><div class="item-material">'+m+'</div><div class="item-qtd">'+q+' un</div></div>';
+      });
+    }
+    document.getElementById('listaEstoque' + cli).innerHTML = html;
+  });
+}
+
+function listarComponentes() {
+  ['Esteio', 'Viamão'].forEach(cli => {
+    var comps = Object.keys(comp).filter(k => k.startsWith(cli+':')).map(k => k.substring(cli.length+1)).sort();
+    var html = '';
+    if (comps.length === 0) {
+      html = '<div class="empty-state">Sem componentes</div>';
+    } else {
+      comps.forEach(c => {
+        var q = comp[cli+':'+c];
+        html += '<div class="item-list"><div class="item-material">'+c+'</div><div class="item-qtd">'+q+' un</div></div>';
+      });
+    }
+    document.getElementById('listaComponentes' + cli).innerHTML = html;
+  });
+}
+
+function gerarSugestao(e) {
+  e.preventDefault();
+  var cl = document.querySelector('input[name="sugestaoClinica"]:checked').value;
+  var mes = document.getElementById('mesSugestao').value;
+  var l = cons[mes] ? Object.values(cons[mes]) : [];
+  var gasto = {};
+  l.forEach(c => { if (c.clinica === cl) gasto[c.material] = (gasto[c.material] || 0) + c.qtd; });
+
+  var h = '';
+  for (var m in gasto) {
+    var g = gasto[m];
+    var s = Math.ceil(g * 1.5);
+    h += '<div style="background:#fff3cd;padding:12px;border-radius:6px;margin-bottom:10px;border-left:4px solid #FFC107"><div class="item-material">'+m+'</div><div style="font-size:11px;color:#666">Consumo: '+g+' un</div><div style="font-size:14px;font-weight:600;color:#FF6B6B;margin-top:6px">💡 Comprar: '+s+' un</div></div>';
+  }
+  document.getElementById('containerSugestao').innerHTML = h || '<div class="empty-state">Nenhum dado</div>';
+}
+
+function msg(id) {
+  var el = document.getElementById(id);
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+document.querySelectorAll('.tab-link').forEach(btn => {
+  btn.addEventListener('click', function() {
+    var id = this.getAttribute('data-tab');
+    document.querySelectorAll('.tab-pane').forEach(e => e.classList.remove('active'));
+    document.querySelectorAll('.tab-link').forEach(e => e.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    this.classList.add('active');
+  });
+});
+
+window.addEventListener('load', () => {
+  document.getElementById('consumoData').value = new Date().toISOString().split('T')[0];
+  var agora = new Date();
+  document.getElementById('mesEscolhido').value = agora.getFullYear()+'-'+String(agora.getMonth()+1).padStart(2,'0');
+  document.getElementById('mesSugestao').value = agora.getFullYear()+'-'+String(agora.getMonth()).padStart(2,'0');
+});
+</script>
+
+</body>
+</html>
