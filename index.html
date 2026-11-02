@@ -212,8 +212,11 @@ let rt,seeded=false;
 function ready(){S.loaded++;clearTimeout(rt);rt=setTimeout(()=>{refresh();autoSeed()},60)}
 /* Primeira abertura com banco vazio: cadastra tudo automaticamente */
 function autoSeed(){
- if(seeded||!S.catOk||!SEED||Object.keys(S.cat.materiais).length)return;
- seeded=true;seedCat();
+ // só roda depois que alguém escolheu o nome, e só UM aparelho consegue a trava
+ if(seeded||!user()||!S.catOk||!SEED||Object.keys(S.cat.materiais).length)return;
+ seeded=true;
+ R('meta/seedLock').transaction(v=>v?undefined:{ts:Date.now(),user:user()})
+  .then(r=>{if(r.committed)seedCat()}).catch(()=>{seeded=false});
 }
 function logAct(clin,txt){R('log').push({ts:Date.now(),user:user(),clin,txt})}
 const qty=(t,c,id)=>{const v=(((S.stock[t]||{})[c])||{})[id];return typeof v==='number'?v:0};
@@ -406,11 +409,14 @@ pg.config={
  },
  update(){$('#cfU')&&($('#cfU').textContent=user())}
 };
+let seeding=false;
 function seedCat(){
+ if(seeding)return;
  const u={};
  for(const t in SEED.cat)SEED.cat[t].forEach(i=>{const id=slug(i.n);if(!S.cat[t][id]){const o={nome:i.n,min:i.min==null?2:i.min};if(i.g)o.grupo=i.g;u[`catalog/${t}/${id}`]=o}});
  const n=Object.keys(u).length;if(!n)return toast('Tudo já está cadastrado');
- R('').update(u).then(()=>{logAct('',`carga inicial: ${n} itens cadastrados`);toast(n+' itens cadastrados ✓')});
+ seeding=true;
+ R('').update(u).then(()=>{logAct('',`carga inicial: ${n} itens cadastrados`);toast(n+' itens cadastrados ✓')}).finally(()=>{seeding=false});
 }
 function seedMat(){
  if(!confirm('Gravar o estoque de materiais do Esteio com os valores da planilha de 28/10? Isso substitui as quantidades atuais desses itens.'))return;
@@ -427,7 +433,7 @@ function seedComp(){
 function pickUser(){
  modal(`<h2>Quem está usando?</h2><p style="color:var(--mut);margin-bottom:14px;font-size:13.5px">Seu nome fica registrado nas movimentações.</p>${USERS.map(u=>`<button class="ubtn" onclick="setUser('${u}')">${u}</button>`).join('')}`);
 }
-function setUser(u){localStorage.setItem('sf_user',u);closeModal();refresh();toast('Olá, '+u+'!')}
+function setUser(u){localStorage.setItem('sf_user',u);closeModal();refresh();toast('Olá, '+u+'!');autoSeed()}
 
 /* ============ INÍCIO ============ */
 buildNav();startSync();go('dashboard');
