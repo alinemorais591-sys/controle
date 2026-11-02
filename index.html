@@ -2,468 +2,437 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Controle Financeiro</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0B1F3A">
+<title>SorriFácil • Gestão de Materiais</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: #f2f2f2;
-    color: #1a1a1a;
-    padding-bottom: 80px;
-  }
-  header {
-    background: #111;
-    color: #fff;
-    padding: 20px 16px 16px;
-    text-align: center;
-  }
-  header h1 { font-size: 18px; font-weight: 600; letter-spacing: 0.3px; }
-  .container { max-width: 480px; margin: 0 auto; padding: 16px; }
-
-  .tabs {
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    display: flex;
-    background: #111;
-    z-index: 100;
-  }
-  .tab-btn {
-    flex: 1;
-    background: none;
-    border: none;
-    color: #999;
-    padding: 14px 4px;
-    font-size: 12px;
-    cursor: pointer;
-  }
-  .tab-btn.active { color: #fff; font-weight: 600; border-top: 2px solid #fff; }
-
-  .tab-content { display: none; }
-  .tab-content.active { display: block; }
-
-  .card {
-    background: #fff;
-    border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 14px;
-    border: 1px solid #e0e0e0;
-  }
-  .card h2 { font-size: 14px; margin-bottom: 12px; color: #333; text-transform: uppercase; letter-spacing: 0.5px;}
-
-  label { display: block; font-size: 13px; color: #555; margin: 10px 0 4px; }
-  select, input {
-    width: 100%;
-    padding: 10px 12px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    font-size: 15px;
-    background: #fafafa;
-  }
-  .radio-group { display: flex; gap: 8px; margin-top: 6px; }
-  .radio-group button {
-    flex: 1;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    background: #fafafa;
-    font-size: 14px;
-    cursor: pointer;
-  }
-  .radio-group button.selected { background: #111; color: #fff; border-color: #111; }
-
-  .btn-primary {
-    width: 100%;
-    background: #111;
-    color: #fff;
-    border: none;
-    padding: 13px;
-    border-radius: 8px;
-    font-size: 15px;
-    font-weight: 600;
-    margin-top: 16px;
-    cursor: pointer;
-  }
-  .btn-primary:active { background: #333; }
-
-  .entry-item, .das-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 0;
-    border-bottom: 1px solid #eee;
-  }
-  .entry-item:last-child, .das-item:last-child { border-bottom: none; }
-  .entry-left { display: flex; flex-direction: column; }
-  .entry-value { font-weight: 600; font-size: 15px; }
-  .entry-sub { font-size: 12px; color: #888; }
-  .nota-toggle {
-    padding: 6px 10px;
-    border-radius: 20px;
-    font-size: 12px;
-    border: 1px solid #ccc;
-    background: #fff;
-    cursor: pointer;
-  }
-  .nota-toggle.ok { background: #111; color: #fff; border-color: #111; }
-
-  .cat-group { margin-bottom: 10px; }
-  .cat-title { font-size: 13px; font-weight: 600; color: #444; margin-bottom: 4px; text-transform: capitalize;}
-  .cat-total { float: right; color: #888; font-weight: 400; }
-
-  .summary-grid { display: flex; gap: 10px; margin-bottom: 14px; }
-  .summary-box {
-    flex: 1;
-    background: #fff;
-    border: 1px solid #e0e0e0;
-    border-radius: 12px;
-    padding: 14px;
-    text-align: center;
-  }
-  .summary-box .label { font-size: 12px; color: #888; margin-bottom: 6px; }
-  .summary-box .value { font-size: 18px; font-weight: 700; }
-
-  .empty { text-align: center; color: #aaa; font-size: 13px; padding: 20px 0; }
-
-  .das-row { display: flex; gap: 8px; }
-  .das-row > div { flex: 1; }
-
-  .delete-btn {
-    background: none; border: none; color: #bbb; font-size: 16px; cursor: pointer; padding: 0 4px;
-  }
+:root{--navy:#0B1F3A;--navy2:#13305C;--navy3:#1B4079;--blue:#1E6BFF;--blue-soft:#E6EFFF;--bg:#F3F6FB;--card:#fff;--line:#E2E8F2;--txt:#0B1F3A;--mut:#5B6B85;--r:14px}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--txt);font-size:15px;-webkit-tap-highlight-color:transparent}
+button,input,select{font:inherit;color:inherit}
+.app{display:flex;min-height:100vh}
+/* sidebar */
+.side{width:244px;background:var(--navy);color:#fff;display:flex;flex-direction:column;position:fixed;inset:0 auto 0 0;z-index:20}
+.brand{display:flex;align-items:center;gap:11px;padding:22px 20px 18px}
+.brand .lg{width:38px;height:38px;border-radius:11px;background:var(--blue);display:grid;place-items:center;font-weight:800;font-size:17px}
+.brand b{font-size:18px;letter-spacing:.2px;display:block}
+.brand small{color:#9FB4D6;font-size:11.5px}
+.nav{padding:10px 12px;display:flex;flex-direction:column;gap:3px;flex:1}
+.nav a{display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:10px;color:#C6D4EC;cursor:pointer;text-decoration:none;font-weight:500;transition:.15s}
+.nav a svg{width:19px;height:19px;flex:none}
+.nav a:hover{background:var(--navy2);color:#fff}
+.nav a.on{background:var(--blue);color:#fff}
+.side .foot{padding:14px 18px 18px;border-top:1px solid var(--navy2);font-size:12.5px;color:#9FB4D6}
+.side .foot b{color:#fff;display:block;font-size:14px;margin-bottom:2px}
+.side .foot a{color:#9FB4D6;cursor:pointer;text-decoration:underline}
+/* main */
+.main{margin-left:244px;flex:1;min-width:0}
+.top{position:sticky;top:0;z-index:10;background:rgba(243,246,251,.92);backdrop-filter:blur(8px);display:flex;align-items:center;gap:12px;padding:14px 28px;border-bottom:1px solid var(--line)}
+.top h1{font-size:21px;font-weight:700;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.seg{display:inline-flex;background:#fff;border:1px solid var(--line);border-radius:10px;padding:3px}
+.seg button{border:0;background:transparent;padding:7px 13px;border-radius:8px;cursor:pointer;font-weight:600;color:var(--mut);font-size:13.5px}
+.seg button.on{background:var(--navy);color:#fff}
+.pill{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;padding:6px 11px;border-radius:99px;background:#fff;border:1px solid var(--line);color:var(--mut);white-space:nowrap}
+.pill i{width:8px;height:8px;border-radius:50%;background:#B7C3D8}
+.pill.ok{color:var(--navy)}.pill.ok i{background:var(--blue);box-shadow:0 0 0 3px var(--blue-soft)}
+.content{padding:24px 28px 90px;max-width:1280px}
+/* cards */
+.grid{display:grid;gap:16px}
+.g4{grid-template-columns:repeat(4,1fr)}.g2{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:1.4fr 1fr}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px}
+.card h3{font-size:15px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.card h3 small{font-weight:500;color:var(--mut);font-size:12.5px}
+.kpi{position:relative;overflow:hidden}
+.kpi .l{font-size:12.5px;color:var(--mut);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.kpi .v{font-size:32px;font-weight:800;margin-top:6px;line-height:1}
+.kpi .s{font-size:12.5px;color:var(--mut);margin-top:7px}
+.kpi.dark{background:var(--navy);border-color:var(--navy);color:#fff}.kpi.dark .l,.kpi.dark .s{color:#9FB4D6}.kpi.dark .v{color:#fff}
+.kpi.acc .v{color:var(--blue)}
+/* buttons / forms */
+.btn{border:0;border-radius:10px;padding:10px 16px;font-weight:600;cursor:pointer;background:var(--navy);color:#fff;transition:.15s;font-size:14px}
+.btn:hover{background:var(--navy3)}
+.btn.blue{background:var(--blue)}.btn.blue:hover{background:#1558d6}
+.btn.ghost{background:#fff;color:var(--navy);border:1px solid var(--line)}.btn.ghost:hover{background:var(--blue-soft)}
+.btn.sm{padding:6px 10px;font-size:13px;border-radius:8px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+label{display:block;font-size:12.5px;font-weight:600;color:var(--mut);margin:0 0 5px}
+input,select{width:100%;border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px 12px;outline:none;font-size:15px}
+input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-soft)}
+.row{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));align-items:end}
+.fld{margin-bottom:0}
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+.tools input[type=search]{max-width:300px}
+.chip{border:1px solid var(--line);background:#fff;border-radius:99px;padding:6px 13px;font-size:13px;font-weight:600;color:var(--mut);cursor:pointer}
+.chip.on{background:var(--blue);border-color:var(--blue);color:#fff}
+/* tables */
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--mut);font-weight:700;padding:10px 12px;border-bottom:1px solid var(--line);background:#F8FAFD;position:sticky;top:61px;z-index:2}
+.tbl td{padding:9px 12px;border-bottom:1px solid #EEF2F8;vertical-align:middle}
+.tbl tr:hover td{background:#FAFCFF}
+.tbl .grp td{background:var(--navy);color:#fff;font-weight:700;font-size:12.5px;letter-spacing:.6px;text-transform:uppercase;padding:8px 12px}
+.tbl .num{text-align:center;width:150px}
+.tw{overflow:auto;border:1px solid var(--line);border-radius:var(--r);background:#fff}
+.stp{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}
+.stp button{width:32px;height:34px;border:0;background:#F3F6FB;cursor:pointer;font-size:17px;font-weight:700;color:var(--navy)}
+.stp button:hover{background:var(--blue-soft)}
+.stp input{width:54px;border:0;border-radius:0;text-align:center;padding:7px 2px;font-weight:700;box-shadow:none!important}
+.stp.z{border-color:var(--navy)}.stp.z input{background:var(--navy);color:#fff}
+.stp.low input{background:var(--blue-soft);color:var(--blue)}
+.tag{display:inline-block;font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:99px}
+.tag.z{background:var(--navy);color:#fff}.tag.l{background:var(--blue-soft);color:var(--blue)}.tag.o{background:#EEF2F8;color:var(--mut)}
+.nm{font-weight:600}.sub{font-size:12px;color:var(--mut)}
+/* bars */
+.bar{display:flex;align-items:center;gap:10px;margin:9px 0;font-size:13.5px}
+.bar .n{width:42%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+.bar .t{flex:1;background:#EEF2F8;border-radius:99px;height:10px;overflow:hidden}
+.bar .t i{display:block;height:100%;background:var(--blue);border-radius:99px}
+.bar .q{width:34px;text-align:right;font-weight:800}
+.cols{display:flex;align-items:flex-end;gap:14px;height:170px;padding-top:10px}
+.col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end}
+.col .pr{display:flex;align-items:flex-end;gap:4px;height:130px;width:100%;justify-content:center}
+.col .pr i{width:42%;max-width:26px;border-radius:6px 6px 0 0;display:block;min-height:2px}
+.col .pr i.a{background:var(--navy)}.col .pr i.b{background:var(--blue)}
+.col span{font-size:12px;color:var(--mut);font-weight:600}
+.leg{display:flex;gap:14px;font-size:12.5px;color:var(--mut);font-weight:600}
+.leg b{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px}
+.feed{list-style:none}
+.feed li{padding:9px 0;border-bottom:1px solid #EEF2F8;font-size:13.5px;display:flex;gap:10px;align-items:flex-start}
+.feed li:last-child{border:0}
+.feed .d{width:8px;height:8px;border-radius:50%;background:var(--blue);margin-top:6px;flex:none}
+.feed time{color:var(--mut);font-size:12px;display:block}
+.empty{padding:26px;text-align:center;color:var(--mut)}
+.banner{background:var(--navy);color:#fff;border-radius:var(--r);padding:18px 20px;display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:16px}
+.banner b{font-size:16px}.banner p{color:#9FB4D6;font-size:13.5px;margin-top:3px}
+/* modal / toast */
+.ov{position:fixed;inset:0;background:rgba(11,31,58,.55);display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
+.ov.on{display:flex}
+.mod{background:#fff;border-radius:16px;padding:22px;width:100%;max-width:420px;max-height:90vh;overflow:auto}
+.mod h2{font-size:18px;margin-bottom:14px}
+.mod .fld{margin-bottom:12px}
+.mod .act{display:flex;gap:10px;justify-content:flex-end;margin-top:16px}
+.ubtn{display:block;width:100%;text-align:left;padding:13px 15px;margin-bottom:8px;border:1px solid var(--line);background:#fff;border-radius:11px;cursor:pointer;font-weight:600}
+.ubtn:hover{border-color:var(--blue);background:var(--blue-soft)}
+#toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%) translateY(20px);background:var(--navy);color:#fff;padding:11px 18px;border-radius:11px;font-weight:600;font-size:14px;opacity:0;pointer-events:none;transition:.25s;z-index:60;max-width:90vw}
+#toast.on{opacity:1;transform:translateX(-50%)}
+#toast.err{background:var(--blue)}
+.bn{display:none}
+/* mobile */
+@media(max-width:900px){
+ .side{display:none}.main{margin-left:0}
+ .top{padding:11px 14px;flex-wrap:wrap}.top h1{font-size:18px;flex:1 1 100%;order:-1}
+ .content{padding:14px 12px 96px}
+ .g4{grid-template-columns:repeat(2,1fr)}.g3,.g2{grid-template-columns:1fr}
+ .kpi .v{font-size:26px}
+ .tbl th{top:auto;position:static}
+ .bn{display:flex;position:fixed;left:0;right:0;bottom:0;background:var(--navy);z-index:30;padding:6px 4px calc(6px + env(safe-area-inset-bottom));justify-content:space-around}
+ .bn a{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;color:#9FB4D6;font-size:10.5px;font-weight:600;padding:6px 2px;border-radius:10px;cursor:pointer}
+ .bn a svg{width:21px;height:21px}
+ .bn a.on{color:#fff;background:var(--blue)}
+ .tbl .num{width:auto}.stp input{width:44px}
+ #toast{bottom:84px}
+}
 </style>
 </head>
 <body>
-
-<header>
-  <h1>Controle Financeiro</h1>
-</header>
-
-<div class="container">
-
-  <!-- ABA 1: LANÇAMENTO -->
-  <div id="tab1" class="tab-content active">
-    <div class="card">
-      <h2>Novo Lançamento</h2>
-
-      <label>Tipo</label>
-      <div class="radio-group">
-        <button type="button" class="selected" id="btnEntrada" onclick="setTipo('entrada')">Entrada</button>
-        <button type="button" id="btnDespesa" onclick="setTipo('despesa')">Despesa</button>
-      </div>
-
-      <label>Valor (R$)</label>
-      <input type="number" id="valor" placeholder="0,00" step="0.01">
-
-      <div id="campoClinica">
-        <label>Clínica</label>
-        <select id="clinica">
-          <option value="Viamão">Viamão</option>
-          <option value="Esteio">Esteio</option>
-        </select>
-      </div>
-
-      <div id="campoCategoria" style="display:none;">
-        <label>Categoria</label>
-        <input type="text" id="categoria" placeholder="Ex: comida, transporte...">
-      </div>
-
-      <label>Data</label>
-      <input type="date" id="data">
-
-      <button class="btn-primary" onclick="salvarLancamento()">Salvar</button>
-    </div>
-  </div>
-
-  <!-- ABA 2: RELATÓRIO -->
-  <div id="tab2" class="tab-content">
-    <div class="card">
-      <h2>Entradas por Clínica</h2>
-      <div id="listaEntradas"></div>
-    </div>
-    <div class="card">
-      <h2>Despesas por Categoria</h2>
-      <div id="listaDespesas"></div>
-    </div>
-  </div>
-
-  <!-- ABA 3: RESUMO + DAS -->
-  <div id="tab3" class="tab-content">
-    <div class="summary-grid">
-      <div class="summary-box">
-        <div class="label">Entradas</div>
-        <div class="value" id="totalEntradas">R$ 0</div>
-      </div>
-      <div class="summary-box">
-        <div class="label">Despesas</div>
-        <div class="value" id="totalDespesas">R$ 0</div>
-      </div>
-      <div class="summary-box">
-        <div class="label">Saldo</div>
-        <div class="value" id="saldo">R$ 0</div>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>Controle do DAS</h2>
-      <div class="das-row">
-        <div>
-          <label>Mês</label>
-          <input type="month" id="dasMes">
-        </div>
-        <div>
-          <label>Valor (R$)</label>
-          <input type="number" id="dasValor" step="0.01">
-        </div>
-      </div>
-      <label>Status</label>
-      <div class="radio-group">
-        <button type="button" class="selected" id="btnDasPendente" onclick="setDasStatus(false)">Pendente</button>
-        <button type="button" id="btnDasPago" onclick="setDasStatus(true)">Pago</button>
-      </div>
-      <button class="btn-primary" onclick="salvarDas()">Salvar DAS</button>
-    </div>
-
-    <div class="card">
-      <h2>Histórico DAS</h2>
-      <div id="listaDas"></div>
-    </div>
-  </div>
-
+<div class="app">
+ <aside class="side">
+  <div class="brand"><div class="lg">SF</div><div><b>SorriFácil</b><small>Gestão de Materiais</small></div></div>
+  <nav class="nav" id="nav"></nav>
+  <div class="foot"><b id="uName">—</b>Esteio • Viamão<br><a onclick="pickUser()">Trocar usuário</a></div>
+ </aside>
+ <div class="main">
+  <header class="top">
+   <h1 id="title">Dashboard</h1>
+   <div class="seg" id="clSeg"></div>
+   <span class="pill" id="conn"><i></i><span>Conectando…</span></span>
+  </header>
+  <main class="content" id="main"></main>
+ </div>
 </div>
+<nav class="bn" id="bn"></nav>
+<div class="ov" id="ov"><div class="mod" id="mod"></div></div>
+<div id="toast"></div>
 
-<div class="tabs">
-  <button class="tab-btn active" id="tabBtn1" onclick="showTab(1)">Lançar</button>
-  <button class="tab-btn" id="tabBtn2" onclick="showTab(2)">Relatório</button>
-  <button class="tab-btn" id="tabBtn3" onclick="showTab(3)">Resumo / DAS</button>
-</div>
-
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script>
-  let tipoAtual = 'entrada';
-  let dasStatusAtual = false;
+/* ============ CONFIG ============ */
+const firebaseConfig={apiKey:"AIzaSyB-3hwadFpflMaSQ08zUixQpX2Tgv6Q098",authDomain:"clinicascontrolemateriais.firebaseapp.com",databaseURL:"https://clinicascontrolemateriais-default-rtdb.europe-west1.firebasedatabase.app",projectId:"clinicascontrolemateriais",storageBucket:"clinicascontrolemateriais.firebasestorage.app",messagingSenderId:"778892127113",appId:"1:778892127113:web:745136edc993dbc729cf58"};
+const ROOT='sorrifacil';            // nó novo no banco (não mexe nos dados antigos)
+const CL=[{k:'esteio',n:'Esteio'},{k:'viamao',n:'Viamão'}];
+const USERS=['Aline','Karina','Débora','Eduarda','Carol','Dalila'];
+const TIPOS={materiais:{n:'Materiais',s:'material',grp:true},componentes:{n:'Componentes',s:'componente',grp:true},implantes:{n:'Implantes',s:'implante',grp:true}};
+const SEED={"cat": {"materiais": [{"n": "Ácido 37% (unidade)", "g": "Geral"}, {"n": "Ácido de Porcelana 10% (unidade)", "g": "Geral"}, {"n": "Adesivo Ambar (4ml)", "g": "Geral"}, {"n": "Agulha Gengival Curta", "g": "Agulhas e lâminas"}, {"n": "Agulha Hipodérmica (Endo)", "g": "Agulhas e lâminas"}, {"n": "Agulha Hipodérmica Descartável", "g": "Agulhas e lâminas"}, {"n": "Alginato Avagel", "g": "Moldagem"}, {"n": "Anestésico Articaína (cartela)", "g": "Anestésicos"}, {"n": "Anestésico Lidocaína (cx)", "g": "Anestésicos"}, {"n": "Anestésico Mepivacaína (cartela)", "g": "Anestésicos"}, {"n": "Anestésico Tópico", "g": "Anestésicos"}, {"n": "Babador Branco", "g": "Geral"}, {"n": "Banda Matriz 0,5", "g": "Acabamento e polimento"}, {"n": "Banda Matriz 0,7", "g": "Acabamento e polimento"}, {"n": "Barreira Gengival", "g": "Geral"}, {"n": "Bioplic", "g": "Geral"}, {"n": "Broca 1012", "g": "Brocas"}, {"n": "Broca 1012 Haste Longa", "g": "Brocas"}, {"n": "Broca 1014", "g": "Brocas"}, {"n": "Broca 1016 Haste Longa (endo)", "g": "Brocas"}, {"n": "Broca 2200", "g": "Brocas"}, {"n": "Broca 3053", "g": "Brocas"}, {"n": "Broca 3118 (chama)", "g": "Brocas"}, {"n": "Broca 3122", "g": "Brocas"}, {"n": "Broca 4138", "g": "Brocas"}, {"n": "Broca Zekria 28mm", "g": "Brocas"}, {"n": "Caixas de Aparelho Ortodôntico (unidade)", "g": "Geral"}, {"n": "Cera 7", "g": "Geral"}, {"n": "Cera Utilidade", "g": "Geral"}, {"n": "Cimento de Zinco LS (pó + liquido)", "g": "Cimentos"}, {"n": "Cimento Endodôntico (pó + liquido)", "g": "Cimentos"}, {"n": "Cimento hydro C", "g": "Cimentos"}, {"n": "Cimento resinoso", "g": "Cimentos"}, {"n": "Cimento Resinoso Alcem Core A2", "g": "Cimentos"}, {"n": "Clareamento Caseiro 16% (unidade)", "g": "Clareamento"}, {"n": "Clareamento Caseiro 22% (unidade)", "g": "Clareamento"}, {"n": "Creme Dental Colgate 30g", "g": "Geral"}, {"n": "Creme Dental Sensibilidade 30g", "g": "Geral"}, {"n": "Deskarpack 3l", "g": "Desinfecção e esterilização"}, {"n": "Deskarpack 7l", "g": "Desinfecção e esterilização"}, {"n": "Detergente Enzimático", "g": "Desinfecção e esterilização"}, {"n": "Disco carborundum (10 unidades)", "g": "Acabamento e polimento"}, {"n": "Escova de Dente (brinde)", "g": "Geral"}, {"n": "FG 118 L (remoc Aparelho)", "g": "Brocas"}, {"n": "FG 7 (cirurgica esférica)", "g": "Brocas"}, {"n": "Fio de Sutura 4,0 Nylon Shalon", "g": "Agulhas e lâminas"}, {"n": "Fio de Sutura 4.0 Nylon (comum)", "g": "Agulhas e lâminas"}, {"n": "Fio Dental", "g": "Geral"}, {"n": "Gaze", "g": "Geral"}, {"n": "Gesso Branco Tipo II (nao comprar)", "g": "Moldagem"}, {"n": "Gesso Especia Tipo IV", "g": "Moldagem"}, {"n": "Gesso Pedra Tipo III", "g": "Moldagem"}, {"n": "Hipoclorito", "g": "Desinfecção e esterilização"}, {"n": "Indicador Biologico", "g": "Desinfecção e esterilização"}, {"n": "Ionomero de Vidro", "g": "Geral"}, {"n": "Kit Cirúrgio", "g": "Geral"}, {"n": "Kit Clareamento de Consultório", "g": "Clareamento"}, {"n": "Kit Silicona de Adição", "g": "Moldagem"}, {"n": "Silicona de Condensação Perfil", "g": "Moldagem"}, {"n": "Lâmina Bisturi 15C", "g": "Agulhas e lâminas"}, {"n": "Lâmina de Bisturi 12C", "g": "Agulhas e lâminas"}, {"n": "Lençol de Borracha (unidade)", "g": "Geral"}, {"n": "Lima manual 31mm nº 10", "g": "Endodontia"}, {"n": "Lima manual 31mm nº 8", "g": "Endodontia"}, {"n": "Lima Rotatoria pro T C/6 Mk Life", "g": "Endodontia"}, {"n": "Luva Cirúrgica 7.0", "g": "Luvas"}, {"n": "Luva Cirúrgica 8.5", "g": "Luvas"}, {"n": "Luva Latex G (cx)", "g": "Luvas"}, {"n": "Luva Latex M (cx)", "g": "Luvas"}, {"n": "Luva Latex PP (cx)", "g": "Luvas"}, {"n": "Máscara Descartável (cx)", "g": "Geral"}, {"n": "Microbrush", "g": "Acabamento e polimento"}, {"n": "Obturador Provisório", "g": "Endodontia"}, {"n": "Orto - Bengalinha cinza", "g": "Ortodontia"}, {"n": "Orto - Bengalinha prateado", "g": "Ortodontia"}, {"n": "Orto - Bengalinha cristal", "g": "Ortodontia"}, {"n": "Orto - Bengalinha branco", "g": "Ortodontia"}, {"n": "Orto - Bengalinha azul bebê", "g": "Ortodontia"}, {"n": "Orto - Bengalinha azul", "g": "Ortodontia"}, {"n": "Orto - Bengalinha azul cristal", "g": "Ortodontia"}, {"n": "Orto - Braquetes Estéticos (boca)", "g": "Ortodontia"}, {"n": "Orto - Elástico 1x8 pesado", "g": "Ortodontia"}, {"n": "Orto - Elástico Corrente Cinza", "g": "Ortodontia"}, {"n": "Orto - Elástico Corrente Preto", "g": "Ortodontia"}, {"n": "Orto - Embalagem Elástico Ortodôntico (un)", "g": "Ortodontia"}, {"n": "Orto - Fio de aço 0,16 inferior", "g": "Ortodontia"}, {"n": "Orto - Fio de aço 0,16x022 inferior (não comprar)", "g": "Ortodontia"}, {"n": "Orto - Fio de Aço 0,17x25 inferior", "g": "Ortodontia"}, {"n": "Orto - Fio de Aço 0,18 Inferior", "g": "Ortodontia"}, {"n": "Orto - Fio NITI 0,14 Inferior", "g": "Ortodontia"}, {"n": "Orto - Fio NITI 0,16 Inferior", "g": "Ortodontia"}, {"n": "Orto - Fio NITI 0,16x22 inferior", "g": "Ortodontia"}, {"n": "Orto - Fio NITI 0,18 Inferior", "g": "Ortodontia"}, {"n": "Orto - Kit Orthocem (Resina + acido)", "g": "Ortodontia"}, {"n": "Papel Carbono", "g": "Papéis"}, {"n": "Papel Grau 10x100", "g": "Papéis"}, {"n": "Papel Grau 15x100", "g": "Papéis"}, {"n": "Papel Grau 30x100", "g": "Papéis"}, {"n": "Papel Grau 5x100", "g": "Papéis"}, {"n": "Papel Grau 8x100", "g": "Papéis"}, {"n": "Pasta Diamantada de Polimento", "g": "Acabamento e polimento"}, {"n": "Pasta Lysanda", "g": "Acabamento e polimento"}, {"n": "Pasta Profilática (menta)", "g": "Acabamento e polimento"}, {"n": "Perfil Bisnaga Catalyst", "g": "Moldagem"}, {"n": "Perfil Bisnaga Light Body", "g": "Moldagem"}, {"n": "Periogard", "g": "Geral"}, {"n": "Pino de fibra de vidro", "g": "Geral"}, {"n": "Pino vermelho", "g": "Geral"}, {"n": "Placa de Acetato 1mm", "g": "Geral"}, {"n": "Placa de Clareamento", "g": "Clareamento"}, {"n": "Ponta para irrigação endo", "g": "Endodontia"}, {"n": "Resina Charisma A1", "g": "Resinas"}, {"n": "Resina Charisma A2", "g": "Resinas"}, {"n": "Resina Charisma A3", "g": "Resinas"}, {"n": "Resina Charisma A3.5", "g": "Resinas"}, {"n": "Resina Charisma B1", "g": "Resinas"}, {"n": "Resina Charisma B2", "g": "Resinas"}, {"n": "Resina Flow A2", "g": "Resinas"}, {"n": "Resina Forma A1D", "g": "Resinas"}, {"n": "Resina Forma A2D", "g": "Resinas"}, {"n": "Resina Forma A3,5D", "g": "Resinas"}, {"n": "Resina Forma B1E", "g": "Resinas"}, {"n": "Resina Forma BL1", "g": "Resinas"}, {"n": "Resina Forma WE", "g": "Resinas"}, {"n": "Resina Omnichroma", "g": "Resinas"}, {"n": "Resina Pattern TVD", "g": "Resinas"}, {"n": "Resinna Forma B1B", "g": "Resinas"}, {"n": "Rolete Algodão", "g": "Geral"}, {"n": "Seringa Descartável 20 ml", "g": "Geral"}, {"n": "Silano", "g": "Geral"}, {"n": "Soft Rebase", "g": "Geral"}, {"n": "Soro Fisiológico 500ml", "g": "Geral"}, {"n": "Sugador Cirúrgico (cx)", "g": "Sugadores"}, {"n": "Sugador Comum", "g": "Sugadores"}, {"n": "Sugador Endodôntico (unidadade)", "g": "Sugadores"}, {"n": "Tira de Lixa Aço Abrasiva", "g": "Acabamento e polimento"}, {"n": "Tira de Lixa de Poliéster", "g": "Acabamento e polimento"}, {"n": "Tira Matriz de Poliester", "g": "Acabamento e polimento"}, {"n": "Touca Descartável", "g": "Geral"}, {"n": "Tricresol", "g": "Endodontia"}, {"n": "Vaselina Sólida", "g": "Geral"}, {"n": "Lubrificante canetas", "g": "Desinfecção e esterilização"}, {"n": "Sugclean", "g": "Desinfecção e esterilização"}, {"n": "Indicador Químico", "g": "Desinfecção e esterilização"}, {"n": "Seringa endo", "g": "Endodontia"}], "componentes": [{"n": "Cilindro calcinável", "g": "Cilindros e transferente"}, {"n": "Cilindro provisório", "g": "Cilindros e transferente"}, {"n": "Transferente de moldeira aberta", "g": "Cilindros e transferente"}, {"n": "UCLA 3,5 x 1,5", "g": "UCLA provisório unitário imediato"}, {"n": "UCLA 3,5 x 2,5", "g": "UCLA provisório unitário imediato"}, {"n": "UCLA 3,5 x 3,5", "g": "UCLA provisório unitário imediato"}, {"n": "UCLA 3,5 x 4,5", "g": "UCLA provisório unitário imediato"}, {"n": "Mini pilar 4,8 x 1,5", "g": "Mini pilar"}, {"n": "Mini pilar 4,8 x 2,5", "g": "Mini pilar"}, {"n": "Mini pilar 4,8 x 3,5", "g": "Mini pilar"}, {"n": "Mini pilar 4,8 x 4,5", "g": "Mini pilar"}, {"n": "Mini pilar 4,8 x 5,5", "g": "Mini pilar"}, {"n": "Mini pilar angulado 4,8 x 1,5 17N", "g": "Mini pilar angulado"}, {"n": "Mini pilar angulado 4,8 x 2,5 17N", "g": "Mini pilar angulado"}, {"n": "Mini pilar angulado 4,8 x 3,5 17N", "g": "Mini pilar angulado"}, {"n": "Mini pilar angulado 4,8 x 1,5 30N", "g": "Mini pilar angulado"}, {"n": "Mini pilar angulado 4,8 x 2,5 30N", "g": "Mini pilar angulado"}, {"n": "Mini pilar angulado 4,8 x 3,5 30N", "g": "Mini pilar angulado"}, {"n": "PRH30", "g": "Outros"}, {"n": "ICMUT 2006", "g": "ICMUT"}, {"n": "ICMUT 3006", "g": "ICMUT"}, {"n": "ICMUT 0504", "g": "ICMUT"}], "implantes": [{"n": "Implante 3,5 x 7", "g": "Implantes"}, {"n": "Implante 3,5 x 8", "g": "Implantes"}, {"n": "Implante 3,5 x 10", "g": "Implantes"}, {"n": "Implante 3,5 x 11,5", "g": "Implantes"}, {"n": "Implante 3,5 x 13", "g": "Implantes"}, {"n": "Implante 3,5 x 15", "g": "Implantes"}, {"n": "Implante 3,5 x 16", "g": "Implantes"}, {"n": "Implante 3,8 x 10", "g": "Implantes"}, {"n": "Implante 3,75 x 7", "g": "Implantes"}, {"n": "Implante 3,75 x 9", "g": "Implantes"}, {"n": "Implante 4 x 7", "g": "Implantes"}, {"n": "Implante 4 x 9", "g": "Implantes"}, {"n": "Implante 4,3 x 8", "g": "Implantes"}, {"n": "Implante 4,3 x 10", "g": "Implantes"}, {"n": "Implante extra longo 18 x 3,8", "g": "Implantes extra longo"}, {"n": "Implante extra longo 20 x 3,8", "g": "Implantes extra longo"}, {"n": "Implante extra longo 22 x 3,8", "g": "Implantes extra longo"}, {"n": "Implante extra longo 24 x 3,8", "g": "Implantes extra longo"}, {"n": "Implante zygomatic 35,0", "g": "Implantes zygomatic"}, {"n": "Implante zygomatic 37,5", "g": "Implantes zygomatic"}, {"n": "Implante zygomatic 40,0", "g": "Implantes zygomatic"}, {"n": "Implante zygomatic 45,0", "g": "Implantes zygomatic"}, {"n": "Implante zygomatic 47,5", "g": "Implantes zygomatic"}]}, "estoqueEsteio": [["Ácido 37% (unidade)", 51], ["Ácido de Porcelana 10% (unidade)", 2], ["Adesivo Ambar (4ml)", 0], ["Agulha Gengival Curta", 0], ["Agulha Hipodérmica (Endo)", 5], ["Agulha Hipodérmica Descartável", 1], ["Alginato Avagel", 0], ["Anestésico Articaína (cartela)", 6], ["Anestésico Lidocaína (cx)", 2], ["Anestésico Mepivacaína (cartela)", 7], ["Anestésico Tópico", 0], ["Babador Branco", 3], ["Banda Matriz 0,5", 2], ["Banda Matriz 0,7", 0], ["Barreira Gengival", 0], ["Bioplic", 5], ["Broca 1012", 0], ["Broca 1012 Haste Longa", 4], ["Broca 1014", 2], ["Broca 1016 Haste Longa (endo)", 3], ["Broca 2200", 9], ["Broca 3053", 0], ["Broca 3118 (chama)", 10], ["Broca 3122", 2], ["Broca 4138", 1], ["Broca Zekria 28mm", 5], ["Caixas de Aparelho Ortodôntico (unidade)", 13], ["Cera 7", 0], ["Cera Utilidade", 0], ["Cimento de Zinco LS (pó + liquido)", 0], ["Cimento Endodôntico (pó + liquido)", 1], ["Cimento hydro C", 0], ["Cimento resinoso", 0], ["Cimento Resinoso Alcem Core A2", 0], ["Clareamento Caseiro 16% (unidade)", 10], ["Clareamento Caseiro 22% (unidade)", 2], ["Creme Dental Colgate 30g", 0], ["Creme Dental Sensibilidade 30g", 0], ["Deskarpack 3l", 1], ["Deskarpack 7l", 1], ["Detergente Enzimático", 0], ["Disco carborundum (10 unidades)", 0], ["Escova de Dente (brinde)", 19], ["FG 118 L (remoc Aparelho)", 0], ["FG 7 (cirurgica esférica)", 0], ["Fio de Sutura 4,0 Nylon Shalon", 1], ["Fio de Sutura 4.0 Nylon (comum)", 1], ["Fio Dental", 3], ["Gaze", 3], ["Gesso Branco Tipo II (nao comprar)", 2], ["Gesso Especia Tipo IV", 5], ["Gesso Pedra Tipo III", 0], ["Hipoclorito", 0], ["Indicador Biologico", 7], ["Ionomero de Vidro", 0], ["Kit Cirúrgio", 0], ["Kit Clareamento de Consultório", 0], ["Kit Silicona de Adição", 2], ["Silicona de Condensação Perfil", 0], ["Lâmina Bisturi 15C", 0], ["Lâmina de Bisturi 12C", 2], ["Lençol de Borracha (unidade)", 5], ["Lima manual 31mm nº 10", 0], ["Lima manual 31mm nº 8", 0], ["Lima Rotatoria pro T C/6 Mk Life", 0], ["Luva Cirúrgica 7.0", 3], ["Luva Cirúrgica 8.5", 16], ["Luva Latex G (cx)", 10], ["Luva Latex M (cx)", 0], ["Luva Latex PP (cx)", 12], ["Máscara Descartável (cx)", 3], ["Microbrush", 1], ["Obturador Provisório", 1], ["Orto - Bengalinha cinza", 1], ["Orto - Bengalinha prateado", 1], ["Orto - Bengalinha cristal", 1], ["Orto - Bengalinha branco", 9], ["Orto - Bengalinha azul bebê", 1], ["Orto - Bengalinha azul", 1], ["Orto - Bengalinha azul cristal", 2], ["Orto - Braquetes Estéticos (boca)", 2], ["Orto - Elástico 1x8 pesado", 1], ["Orto - Elástico Corrente Cinza", 2], ["Orto - Elástico Corrente Preto", 3], ["Orto - Embalagem Elástico Ortodôntico (un)", 9], ["Orto - Fio de aço 0,16 inferior", 1], ["Orto - Fio de aço 0,16x022 inferior (não comprar)", 0], ["Orto - Fio de Aço 0,17x25 inferior", 1], ["Orto - Fio de Aço 0,18 Inferior", 1], ["Orto - Fio NITI 0,14 Inferior", 1], ["Orto - Fio NITI 0,16 Inferior", 2], ["Orto - Fio NITI 0,16x22 inferior", 2], ["Orto - Fio NITI 0,18 Inferior", 1], ["Orto - Kit Orthocem (Resina + acido)", 1], ["Papel Carbono", 3], ["Papel Grau 10x100", 1], ["Papel Grau 15x100", 0], ["Papel Grau 30x100", 0], ["Papel Grau 5x100", 0], ["Papel Grau 8x100", 1], ["Pasta Diamantada de Polimento", 0], ["Pasta Lysanda", 2], ["Pasta Profilática (menta)", 1], ["Perfil Bisnaga Catalyst", 2], ["Perfil Bisnaga Light Body", 10], ["Periogard", 0], ["Pino de fibra de vidro", 0], ["Pino vermelho", 0], ["Placa de Acetato 1mm", 21], ["Placa de Clareamento", 18], ["Ponta para irrigação endo", 3], ["Resina Charisma A1", 1], ["Resina Charisma A2", 1], ["Resina Charisma A3", 0], ["Resina Charisma A3.5", 3], ["Resina Charisma B1", 0], ["Resina Charisma B2", 0], ["Resina Flow A2", 3], ["Resina Forma A1D", 0], ["Resina Forma A2D", 0], ["Resina Forma A3,5D", 0], ["Resina Forma B1E", 0], ["Resina Forma BL1", 1], ["Resina Forma WE", 2], ["Resina Omnichroma", 0], ["Resina Pattern TVD", 0], ["Resinna Forma B1B", 0], ["Rolete Algodão", 4], ["Seringa Descartável 20 ml", 3], ["Silano", 0], ["Soft Rebase", 1], ["Soro Fisiológico 500ml", 0], ["Sugador Cirúrgico (cx)", 1], ["Sugador Comum", 3], ["Sugador Endodôntico (unidadade)", 13], ["Tira de Lixa Aço Abrasiva", 1], ["Tira de Lixa de Poliéster", 4], ["Tira Matriz de Poliester", 3], ["Touca Descartável", 0], ["Tricresol", 1], ["Vaselina Sólida", 1], ["Lubrificante canetas", 0], ["Sugclean", 0], ["Indicador Químico", 1], ["Seringa endo", 6]], "compQtd": [["Cilindro calcinável", 8], ["Cilindro provisório", 6], ["Transferente de moldeira aberta", 0], ["UCLA 3,5 x 1,5", 8], ["UCLA 3,5 x 2,5", 9], ["UCLA 3,5 x 3,5", 0], ["UCLA 3,5 x 4,5", 3], ["Mini pilar 4,8 x 1,5", 0], ["Mini pilar 4,8 x 2,5", 5], ["Mini pilar 4,8 x 3,5", 2], ["Mini pilar 4,8 x 4,5", 14], ["Mini pilar 4,8 x 5,5", 7], ["Mini pilar angulado 4,8 x 1,5 17N", 1], ["Mini pilar angulado 4,8 x 2,5 17N", 5], ["Mini pilar angulado 4,8 x 3,5 17N", 4], ["Mini pilar angulado 4,8 x 1,5 30N", 6], ["Mini pilar angulado 4,8 x 2,5 30N", 8], ["Mini pilar angulado 4,8 x 3,5 30N", 0], ["PRH30", 16], ["ICMUT 2006", 9], ["ICMUT 3006", 3], ["ICMUT 0504", 1]]};
 
-  function todayStr() {
-    const d = new Date();
-    return d.toISOString().split('T')[0];
-  }
-  document.getElementById('data').value = todayStr();
+/* ============ ESTADO ============ */
+const S={cat:{materiais:{},componentes:{},implantes:{}},stock:{materiais:{},componentes:{},implantes:{}},cons:{},log:{},page:'dashboard',clin:'todas',month:new Date().toISOString().slice(0,7),filt:'todos',q:'',loaded:0};
+const $=s=>document.querySelector(s);
+const esc=t=>String(t==null?'':t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const slug=t=>t.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||('i'+Date.now());
+const user=()=>localStorage.getItem('sf_user')||'';
+const fmtD=d=>{const p=d.split('-');return p[2]+'/'+p[1]+'/'+p[0]};
+const fmtT=ts=>{const d=new Date(ts);return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})};
+const ICO={
+ dashboard:'<rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/>',
+ consumo:'<rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 14h6"/>',
+ materiais:'<path d="M16.5 9.4 7.5 4.21"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/>',
+ componentes:'<path d="m12 2 10 5-10 5L2 7Z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/>',
+ implantes:'<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>',
+ compras:'<circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>',
+ config:'<line x1="4" x2="4" y1="21" y2="14"/><line x1="4" x2="4" y1="10" y2="3"/><line x1="12" x2="12" y1="21" y2="12"/><line x1="12" x2="12" y1="8" y2="3"/><line x1="20" x2="20" y1="21" y2="16"/><line x1="20" x2="20" y1="12" y2="3"/><line x1="2" x2="6" y1="14" y2="14"/><line x1="10" x2="14" y1="8" y2="8"/><line x1="18" x2="22" y1="16" y2="16"/>'
+};
+const svg=n=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICO[n]}</svg>`;
+const PAGES=[['dashboard','Dashboard'],['consumo','Consumo'],['materiais','Materiais'],['componentes','Componentes'],['implantes','Implantes'],['compras','Compras'],['config','Ajustes']];
+const SHORT={dashboard:'Início',consumo:'Consumo',materiais:'Materiais',componentes:'Componentes',implantes:'Implantes',compras:'Compras',config:'Ajustes'};
 
-  function setTipo(tipo) {
-    tipoAtual = tipo;
-    document.getElementById('btnEntrada').classList.toggle('selected', tipo === 'entrada');
-    document.getElementById('btnDespesa').classList.toggle('selected', tipo === 'despesa');
-    document.getElementById('campoClinica').style.display = tipo === 'entrada' ? 'block' : 'none';
-    document.getElementById('campoCategoria').style.display = tipo === 'despesa' ? 'block' : 'none';
-  }
+function toast(m,err){const t=$('#toast');t.textContent=m;t.className=err?'err on':'on';clearTimeout(toast.h);toast.h=setTimeout(()=>t.className='',2600)}
+function modal(html){$('#mod').innerHTML=html;$('#ov').classList.add('on')}
+function closeModal(){$('#ov').classList.remove('on')}
+$('#ov').addEventListener('mousedown',e=>{if(e.target.id==='ov'&&user())closeModal()});
 
-  function setDasStatus(pago) {
-    dasStatusAtual = pago;
-    document.getElementById('btnDasPendente').classList.toggle('selected', !pago);
-    document.getElementById('btnDasPago').classList.toggle('selected', pago);
-  }
+/* ============ FIREBASE ============ */
+firebase.initializeApp(firebaseConfig);
+const db=firebase.database();
+const R=p=>db.ref(ROOT+'/'+p);
+function startSync(){
+ db.ref('.info/connected').on('value',s=>{const c=$('#conn');if(s.val()){c.className='pill ok';c.lastChild.textContent='Online • tempo real'}else{c.className='pill';c.lastChild.textContent='Sem conexão'}});
+ R('catalog').on('value',s=>{const v=s.val()||{};for(const t in TIPOS)S.cat[t]=v[t]||{};S.catOk=1;ready()});
+ R('stock').on('value',s=>{const v=s.val()||{};for(const t in TIPOS)S.stock[t]=v[t]||{};ready()});
+ const since=new Date();since.setMonth(since.getMonth()-6);since.setDate(1);
+ R('consumos').orderByChild('data').startAt(since.toISOString().slice(0,10)).on('value',s=>{S.cons=s.val()||{};ready()});
+ R('log').limitToLast(25).on('value',s=>{S.log=s.val()||{};ready()});
+}
+let rt,seeded=false;
+function ready(){S.loaded++;clearTimeout(rt);rt=setTimeout(()=>{refresh();autoSeed()},60)}
+/* Primeira abertura com banco vazio: cadastra tudo automaticamente */
+function autoSeed(){
+ if(seeded||!S.catOk||!SEED||Object.keys(S.cat.materiais).length)return;
+ seeded=true;seedCat();
+}
+function logAct(clin,txt){R('log').push({ts:Date.now(),user:user(),clin,txt})}
+const qty=(t,c,id)=>{const v=(((S.stock[t]||{})[c])||{})[id];return typeof v==='number'?v:0};
+const minOf=(t,id)=>{const m=(S.cat[t][id]||{}).min;return typeof m==='number'?m:2};
+const cname=k=>(CL.find(c=>c.k===k)||{}).n||k;
+const activeCl=()=>S.clin==='todas'?CL:CL.filter(c=>c.k===S.clin);
+const items=t=>Object.entries(S.cat[t]).map(([id,o])=>({id,...o})).sort((a,b)=>(a.grupo||'').localeCompare(b.grupo||'','pt')||a.nome.localeCompare(b.nome,'pt',{numeric:true}));
 
-  function getLancamentos() {
-    return JSON.parse(localStorage.getItem('lancamentos') || '[]');
-  }
-  function saveLancamentos(arr) {
-    localStorage.setItem('lancamentos', JSON.stringify(arr));
-  }
-  function getDas() {
-    return JSON.parse(localStorage.getItem('das') || '[]');
-  }
-  function saveDasList(arr) {
-    localStorage.setItem('das', JSON.stringify(arr));
-  }
+/* ============ NAV ============ */
+function buildNav(){
+ $('#nav').innerHTML=PAGES.map(([k,n])=>`<a data-p="${k}" onclick="go('${k}')">${svg(k)}${n}</a>`).join('');
+ $('#bn').innerHTML=PAGES.map(([k])=>`<a data-p="${k}" onclick="go('${k}')">${svg(k)}${SHORT[k]}</a>`).join('');
+ $('#clSeg').innerHTML=['todas','esteio','viamao'].map(k=>`<button data-c="${k}" onclick="setClin('${k}')">${k==='todas'?'Todas':cname(k)}</button>`).join('');
+}
+function setClin(k){S.clin=k;refresh()}
+function go(p){S.page=p;S.q='';S.filt='todos';document.querySelectorAll('[data-p]').forEach(a=>a.classList.toggle('on',a.dataset.p===p));$('#title').textContent=(PAGES.find(x=>x[0]===p)||[])[1];window.scrollTo(0,0);mount()}
+function refresh(){document.querySelectorAll('#clSeg button').forEach(b=>b.classList.toggle('on',b.dataset.c===S.clin));$('#uName').textContent=user()||'—';update()}
+const pg={};
+function mount(){(pg[S.page].mount||(()=>{$('#main').innerHTML=''}))();refresh()}
+function update(){pg[S.page].update&&pg[S.page].update()}
 
-  function salvarLancamento() {
-    const valor = parseFloat(document.getElementById('valor').value);
-    const data = document.getElementById('data').value;
-    if (!valor || valor <= 0) { alert('Digite um valor válido'); return; }
-    if (!data) { alert('Selecione a data'); return; }
+/* ============ DASHBOARD ============ */
+function consList(){return Object.entries(S.cons).map(([id,c])=>({id,...c}))}
+function monthsBack(n){const r=[],d=new Date();d.setDate(1);for(let i=n-1;i>=0;i--){const x=new Date(d.getFullYear(),d.getMonth()-i,1);r.push(x.toISOString().slice(0,7))}return r}
+const MN=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+pg.dashboard={
+ mount(){$('#main').innerHTML='<div id="dash"></div>'},
+ update(){
+  const cl=activeCl(),cs=consList();
+  const mat=items('materiais');
+  let zer=0,low=0;const alerts=[];
+  mat.forEach(m=>cl.forEach(c=>{const q=qty('materiais',c.k,m.id);if(q<=0){zer++;alerts.push({m,c,q,z:1})}else if(q<=minOf('materiais',m.id)){low++;alerts.push({m,c,q,z:0})}}));
+  alerts.sort((a,b)=>b.z-a.z||a.q-b.q||a.m.nome.localeCompare(b.m.nome));
+  const mCons=cs.filter(c=>(c.data||'').startsWith(S.month)&&cl.some(x=>x.k===c.clinica));
+  const tot=mCons.reduce((s,c)=>s+(+c.qtd||0),0);
+  const by={};mCons.forEach(c=>by[c.nome]=(by[c.nome]||0)+(+c.qtd||0));
+  const top=Object.entries(by).sort((a,b)=>b[1]-a[1]).slice(0,8),mx=top.length?top[0][1]:1;
+  const ms=monthsBack(6);
+  const ser=ms.map(m=>({m,e:cs.filter(c=>c.clinica==='esteio'&&(c.data||'').startsWith(m)).reduce((s,c)=>s+(+c.qtd||0),0),v:cs.filter(c=>c.clinica==='viamao'&&(c.data||'').startsWith(m)).reduce((s,c)=>s+(+c.qtd||0),0)}));
+  const smx=Math.max(1,...ser.map(x=>Math.max(x.e,x.v)));
+  const logs=Object.values(S.log).sort((a,b)=>b.ts-a.ts).slice(0,10);
+  const empty=!mat.length;
+  $('#dash').innerHTML=`
+  ${empty?`<div class="banner"><div><b>Bem-vinda ao SorriFácil</b><p>O cadastro ainda está vazio. Carregue os materiais, componentes e implantes para começar.</p></div><button class="btn blue" onclick="go('config')">Ir para Ajustes</button></div>`:''}
+  <div class="grid g4" style="margin-bottom:16px">
+   <div class="card kpi dark"><div class="l">Materiais cadastrados</div><div class="v">${mat.length}</div><div class="s">${Object.keys(S.cat.componentes).length} componentes • ${Object.keys(S.cat.implantes).length} implantes</div></div>
+   <div class="card kpi acc"><div class="l">Em falta (zerado)</div><div class="v">${zer}</div><div class="s">${cl.map(c=>c.n).join(' + ')}</div></div>
+   <div class="card kpi"><div class="l">Estoque baixo</div><div class="v">${low}</div><div class="s">abaixo ou igual ao mínimo</div></div>
+   <div class="card kpi"><div class="l">Consumo no mês</div><div class="v">${tot}</div><div class="s"><select id="mSel" style="padding:4px 8px;font-size:13px;width:auto" onchange="S.month=this.value;update()">${monthsBack(6).reverse().map(m=>`<option value="${m}" ${m===S.month?'selected':''}>${MN[+m.slice(5)-1]}/${m.slice(0,4)}</option>`).join('')}</select></div></div>
+  </div>
+  <div class="grid g3" style="margin-bottom:16px">
+   <div class="card"><h3>Materiais mais consumidos <small>${MN[+S.month.slice(5)-1]}/${S.month.slice(0,4)}</small></h3>
+    ${top.length?top.map(([n,q])=>`<div class="bar"><span class="n" title="${esc(n)}">${esc(n)}</span><span class="t"><i style="width:${q/mx*100}%"></i></span><span class="q">${q}</span></div>`).join(''):'<div class="empty">Nenhum consumo registrado neste mês</div>'}</div>
+   <div class="card"><h3>Consumo por clínica <span class="leg"><span><b style="background:var(--navy)"></b>Esteio</span><span><b style="background:var(--blue)"></b>Viamão</span></span></h3>
+    <div class="cols">${ser.map(x=>`<div class="col"><div class="pr"><i class="a" style="height:${x.e/smx*100}%" title="Esteio ${x.e}"></i><i class="b" style="height:${x.v/smx*100}%" title="Viamão ${x.v}"></i></div><span>${MN[+x.m.slice(5)-1]}</span></div>`).join('')}</div></div>
+  </div>
+  <div class="grid g3">
+   <div class="card"><h3>Atenção no estoque <small>${alerts.length} itens</small></h3>
+    ${alerts.length?`<div style="max-height:360px;overflow:auto"><table class="tbl"><tbody>${alerts.slice(0,40).map(a=>`<tr><td><div class="nm">${esc(a.m.nome)}</div><div class="sub">${cname(a.c.k)}</div></td><td style="text-align:right"><span class="tag ${a.z?'z':'l'}">${a.z?'Zerado':a.q+' un'}</span></td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">Tudo certo por aqui ✓</div>'}</div>
+   <div class="card"><h3>Atividade recente</h3>${logs.length?`<ul class="feed">${logs.map(l=>`<li><span class="d"></span><div><b>${esc(l.user||'—')}</b> ${esc(l.txt)}<time>${fmtT(l.ts)}${l.clin?' • '+esc(cname(l.clin)):''}</time></div></li>`).join('')}</ul>`:'<div class="empty">Sem atividade ainda</div>'}</div>
+  </div>`;
+ }
+};
 
-    const item = {
-      id: Date.now(),
-      tipo: tipoAtual,
-      valor: valor,
-      data: data,
-      nota: false
-    };
+/* ============ CONSUMO ============ */
+pg.consumo={
+ mount(){
+  const today=new Date().toISOString().slice(0,10);
+  $('#main').innerHTML=`<div class="card" style="margin-bottom:16px"><h3>Registrar consumo de material</h3>
+  <div class="row">
+   <div class="fld"><label>Clínica</label><select id="cClin">${CL.map(c=>`<option value="${c.k}" ${S.clin===c.k?'selected':''}>${c.n}</option>`).join('')}</select></div>
+   <div class="fld" style="grid-column:span 2"><label>Material</label><input id="cMat" list="dlMat" placeholder="Digite para buscar…" autocomplete="off"><datalist id="dlMat"></datalist></div>
+   <div class="fld"><label>Data</label><input type="date" id="cData" value="${today}"></div>
+   <div class="fld"><label>Quantidade</label><input type="number" id="cQtd" min="1" value="1" inputmode="numeric"></div>
+   <div class="fld"><label>Em estoque</label><input id="cEst" readonly value="—"></div>
+   <div class="fld"><button class="btn blue" style="width:100%" onclick="regCons()">Registrar</button></div>
+  </div></div>
+  <div class="card"><h3>Últimos consumos <small>(toque em ✕ para desfazer e devolver ao estoque)</small></h3><div id="cHist"></div></div>`;
+  $('#cMat').addEventListener('input',showEst);$('#cClin').addEventListener('change',showEst);
+ },
+ update(){
+  const dl=$('#dlMat');if(!dl)return;
+  const sig=Object.keys(S.cat.materiais).length;
+  if(dl.dataset.n!=sig){dl.dataset.n=sig;dl.innerHTML=items('materiais').map(m=>`<option value="${esc(m.nome)}">`).join('')}
+  showEst();
+  const cs=consList().filter(c=>S.clin==='todas'||c.clinica===S.clin).sort((a,b)=>(b.ts||0)-(a.ts||0)).slice(0,40);
+  $('#cHist').innerHTML=cs.length?`<div class="tw"><table class="tbl"><thead><tr><th>Data</th><th>Material</th><th>Clínica</th><th>Qtd</th><th>Por</th><th></th></tr></thead><tbody>${cs.map(c=>`<tr><td>${fmtD(c.data)}</td><td class="nm">${esc(c.nome)}</td><td>${cname(c.clinica)}</td><td><b>${c.qtd}</b></td><td>${esc(c.user||'')}</td><td><button class="btn ghost sm" onclick="undoCons('${c.id}')">✕</button></td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">Nenhum consumo registrado</div>';
+ }
+};
+function matByName(n){n=(n||'').trim().toLowerCase();return items('materiais').find(m=>m.nome.toLowerCase()===n)}
+function showEst(){const m=matByName($('#cMat').value),c=$('#cClin').value;$('#cEst').value=m?qty('materiais',c,m.id):'—'}
+function regCons(){
+ const m=matByName($('#cMat').value),c=$('#cClin').value,q=parseInt($('#cQtd').value),d=$('#cData').value;
+ if(!m)return toast('Escolha um material da lista',1);
+ if(!(q>0)||!d)return toast('Informe data e quantidade',1);
+ R(`stock/materiais/${c}/${m.id}`).transaction(cur=>{cur=cur||0;return cur<q?undefined:cur-q},(err,ok)=>{
+  if(err||!ok)return toast(`Estoque insuficiente (${qty('materiais',c,m.id)} un.)`,1);
+  R('consumos').push({clinica:c,matId:m.id,nome:m.nome,qtd:q,data:d,user:user(),ts:Date.now()});
+  logAct(c,`consumiu ${q}× ${m.nome}`);
+  toast('Consumo registrado ✓');$('#cMat').value='';$('#cQtd').value=1;
+ },false);
+}
+function undoCons(id){
+ const c=S.cons[id];if(!c||!confirm(`Desfazer consumo de ${c.qtd}× ${c.nome}?`))return;
+ R(`stock/materiais/${c.clinica}/${c.matId}`).transaction(v=>(v||0)+(+c.qtd),()=>{R('consumos/'+id).remove();logAct(c.clinica,`desfez consumo de ${c.qtd}× ${c.nome}`);toast('Consumo desfeito')},false);
+}
 
-    if (tipoAtual === 'entrada') {
-      item.clinica = document.getElementById('clinica').value;
-    } else {
-      const cat = document.getElementById('categoria').value.trim();
-      if (!cat) { alert('Digite a categoria'); return; }
-      item.categoria = cat.toLowerCase();
-    }
+/* ============ ESTOQUE (materiais / componentes / implantes) ============ */
+function stockPage(t){return{
+ mount(){
+  const T=TIPOS[t];
+  $('#main').innerHTML=`<div class="tools"><input type="search" id="sq" placeholder="Buscar ${T.n.toLowerCase()}…" oninput="S.q=this.value;update()">
+   ${['todos','zerados','baixos'].map(f=>`<button class="chip" data-f="${f}" onclick="S.filt='${f}';update()">${f==='todos'?'Todos':f==='zerados'?'Zerados':'Estoque baixo'}</button>`).join('')}
+   <span style="flex:1"></span><button class="btn blue" onclick="itemModal('${t}')">+ Novo ${T.s}</button></div>
+   <div class="tw"><table class="tbl"><thead id="sh"></thead><tbody id="sb"></tbody></table></div>`;
+ },
+ update(){
+  const cl=activeCl(),q=S.q.toLowerCase();
+  document.querySelectorAll('[data-f]').forEach(b=>b.classList.toggle('on',b.dataset.f===S.filt));
+  $('#sh').innerHTML=`<tr><th>Item</th>${cl.map(c=>`<th class="num">${c.n}</th>`).join('')}<th style="width:50px"></th></tr>`;
+  let g=null,h='',n=0;
+  items(t).forEach(it=>{
+   if(q&&!(it.nome+' '+(it.grupo||'')).toLowerCase().includes(q))return;
+   const qs=cl.map(c=>qty(t,c.k,it.id)),mn=minOf(t,it.id);
+   if(S.filt==='zerados'&&!qs.some(v=>v<=0))return;
+   if(S.filt==='baixos'&&!qs.some(v=>v>0&&v<=mn))return;
+   if((it.grupo||'')!==g){g=it.grupo||'';if(g)h+=`<tr class="grp"><td colspan="${cl.length+2}">${esc(g)}</td></tr>`}
+   n++;
+   h+=`<tr><td><div class="nm">${esc(it.nome)}</div></td>${cl.map((c,i)=>{const v=qs[i];return`<td class="num"><span class="stp ${v<=0?'z':v<=mn?'low':''}"><button onclick="adj('${t}','${c.k}','${it.id}',-1)">−</button><input type="number" inputmode="numeric" min="0" value="${v}" onchange="setQty('${t}','${c.k}','${it.id}',this.value)"><button onclick="adj('${t}','${c.k}','${it.id}',1)">+</button></span></td>`}).join('')}<td><button class="btn ghost sm" onclick="itemModal('${t}','${it.id}')">✎</button></td></tr>`;
+  });
+  $('#sb').innerHTML=h||`<tr><td colspan="${cl.length+2}" class="empty">Nenhum item encontrado</td></tr>`;
+ }
+}}
+pg.materiais=stockPage('materiais');pg.componentes=stockPage('componentes');pg.implantes=stockPage('implantes');
+function nm(t,id){return (S.cat[t][id]||{}).nome||id}
+function adj(t,c,id,d){R(`stock/${t}/${c}/${id}`).transaction(v=>Math.max(0,(v||0)+d),(e,ok)=>{if(ok)logAct(c,`${d>0?'+1':'−1'} ${nm(t,id)}`)},false)}
+function setQty(t,c,id,v){v=Math.max(0,parseInt(v)||0);R(`stock/${t}/${c}/${id}`).set(v).then(()=>{logAct(c,`ajustou ${nm(t,id)} para ${v}`);toast('Salvo ✓')})}
+function itemModal(t,id){
+ const it=id?S.cat[t][id]:{nome:'',grupo:'',min:2};const T=TIPOS[t];
+ const groups=[...new Set(items(t).map(i=>i.grupo).filter(Boolean))];
+ modal(`<h2>${id?'Editar':'Novo'} ${T.s}</h2>
+ <div class="fld"><label>Nome</label><input id="iN" value="${esc(it.nome)}"></div>
+ <div class="fld"><label>Grupo / categoria</label><input id="iG" list="dlG" value="${esc(it.grupo||'')}"><datalist id="dlG">${groups.map(g=>`<option value="${esc(g)}">`).join('')}</datalist></div>
+ <div class="fld"><label>Estoque mínimo (alerta)</label><input type="number" id="iM" min="0" value="${typeof it.min==='number'?it.min:2}"></div>
+ <div class="act">${id?`<button class="btn ghost" style="margin-right:auto" onclick="delItem('${t}','${id}')">Apagar</button>`:''}<button class="btn ghost" onclick="closeModal()">Cancelar</button><button class="btn blue" onclick="saveItem('${t}','${id||''}')">Salvar</button></div>`);
+}
+function saveItem(t,id){
+ const n=$('#iN').value.trim(),g=$('#iG').value.trim(),m=parseInt($('#iM').value);if(!n)return toast('Informe o nome',1);
+ if(!id){id=slug(n);if(S.cat[t][id])return toast('Já existe um item com esse nome',1)}
+ const o={nome:n,min:isNaN(m)?2:m};if(g)o.grupo=g;
+ R(`catalog/${t}/${id}`).set(o).then(()=>{logAct('',`salvou ${TIPOS[t].s}: ${n}`);closeModal();toast('Salvo ✓')});
+}
+function delItem(t,id){if(!confirm(`Apagar "${nm(t,id)}" das duas clínicas?`))return;const n=nm(t,id);const u={};u[`catalog/${t}/${id}`]=null;CL.forEach(c=>u[`stock/${t}/${c.k}/${id}`]=null);R('').update(u).then(()=>{logAct('',`apagou ${n}`);closeModal();toast('Apagado')})}
 
-    const arr = getLancamentos();
-    arr.push(item);
-    saveLancamentos(arr);
+/* ============ COMPRAS ============ */
+pg.compras={
+ mount(){$('#main').innerHTML=`<div class="tools"><div class="seg" id="pcSeg">${CL.map(c=>`<button data-k="${c.k}" onclick="S.pc='${c.k}';update()">${c.n}</button>`).join('')}</div>
+  <select id="pcM" style="width:auto" onchange="S.month=this.value;update()">${monthsBack(6).reverse().map(m=>`<option value="${m}" ${m===S.month?'selected':''}>Consumo de ${MN[+m.slice(5)-1]}/${m.slice(0,4)}</option>`).join('')}</select><span style="flex:1"></span>
+  <button class="btn ghost" onclick="copySug()">Copiar lista</button><button class="btn blue" onclick="csvSug()">Baixar Excel (CSV)</button></div>
+  <div class="card" style="margin-bottom:14px;font-size:13.5px;color:var(--mut)">Sugestão = maior valor entre <b>consumo do mês</b> e <b>estoque mínimo</b>, menos o estoque atual.</div>
+  <div class="tw"><table class="tbl"><thead><tr><th>Material</th><th class="num">Estoque</th><th class="num">Consumo mês</th><th class="num">Pedir</th></tr></thead><tbody id="pcB"></tbody></table></div>`},
+ update(){
+  S.pc=S.pc||(S.clin==='viamao'?'viamao':'esteio');
+  document.querySelectorAll('#pcSeg button').forEach(b=>b.classList.toggle('on',b.dataset.k===S.pc));
+  const rows=sug();
+  $('#pcB').innerHTML=rows.length?rows.map(r=>`<tr><td class="nm">${esc(r.nome)}</td><td class="num">${r.est}</td><td class="num">${r.con}</td><td class="num"><span class="tag l" style="font-size:13px">${r.pedir}</span></td></tr>`).join(''):'<tr><td colspan="4" class="empty">Nada a repor neste período ✓</td></tr>';
+ }
+};
+function sug(){
+ const c=S.pc||'esteio',con={};
+ consList().filter(x=>x.clinica===c&&(x.data||'').startsWith(S.month)).forEach(x=>con[x.matId]=(con[x.matId]||0)+(+x.qtd||0));
+ return items('materiais').map(m=>{const e=qty('materiais',c,m.id),k=con[m.id]||0,p=Math.max(k,minOf('materiais',m.id))-e;return{nome:m.nome,est:e,con:k,pedir:p}}).filter(r=>r.pedir>0).sort((a,b)=>b.pedir-a.pedir);
+}
+function csvSug(){
+ const rows=sug(),csv='﻿Material;Estoque;Consumo do mês;Pedir\n'+rows.map(r=>[`"${r.nome.replace(/"/g,'""')}"`,r.est,r.con,r.pedir].join(';')).join('\n');
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download=`pedido-${S.pc}-${S.month}.csv`;a.click();
+}
+function copySug(){const t=`Pedido ${cname(S.pc)} — ${S.month}\n`+sug().map(r=>`• ${r.nome}: ${r.pedir}`).join('\n');(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('Lista copiada ✓'),()=>toast('Não foi possível copiar',1))}
 
-    document.getElementById('valor').value = '';
-    document.getElementById('categoria').value = '';
-    alert('Lançamento salvo!');
-    renderAll();
-  }
+/* ============ AJUSTES ============ */
+pg.config={
+ mount(){
+  $('#main').innerHTML=`<div class="grid g2">
+  <div class="card"><h3>Usuário</h3><p style="margin-bottom:12px;color:var(--mut)">Registrando como <b style="color:var(--navy)" id="cfU"></b>. Os nomes aparecem no histórico de atividade.</p><button class="btn" onclick="pickUser()">Trocar usuário</button></div>
+  <div class="card"><h3>Carga inicial</h3>
+   <p style="color:var(--mut);margin-bottom:12px;font-size:13.5px">Use uma vez. Cadastra sem apagar o que já existe.</p>
+   <div style="display:grid;gap:10px">
+    <button class="btn" onclick="seedCat()">Cadastrar materiais, componentes e implantes</button>
+   </div></div></div>`;
+ },
+ update(){$('#cfU')&&($('#cfU').textContent=user())}
+};
+function seedCat(){
+ const u={};
+ for(const t in SEED.cat)SEED.cat[t].forEach(i=>{const id=slug(i.n);if(!S.cat[t][id]){const o={nome:i.n,min:i.min==null?2:i.min};if(i.g)o.grupo=i.g;u[`catalog/${t}/${id}`]=o}});
+ const n=Object.keys(u).length;if(!n)return toast('Tudo já está cadastrado');
+ R('').update(u).then(()=>{logAct('',`carga inicial: ${n} itens cadastrados`);toast(n+' itens cadastrados ✓')});
+}
+function seedMat(){
+ if(!confirm('Gravar o estoque de materiais do Esteio com os valores da planilha de 28/10? Isso substitui as quantidades atuais desses itens.'))return;
+ const u={};SEED.estoqueEsteio.forEach(([n,q])=>u[`stock/materiais/esteio/${slug(n)}`]=q);
+ R('').update(u).then(()=>{logAct('esteio','carga inicial do estoque (planilha 28/10)');toast('Estoque do Esteio carregado ✓')});
+}
+function seedComp(){
+ const c=$('#sCl').value;if(!confirm('Gravar as quantidades de componentes na clínica '+cname(c)+'?'))return;
+ const u={};SEED.compQtd.forEach(([n,q])=>u[`stock/componentes/${c}/${slug(n)}`]=q);
+ R('').update(u).then(()=>{logAct(c,'carga inicial dos componentes');toast('Componentes carregados ✓')});
+}
 
-  function toggleNota(id) {
-    const arr = getLancamentos();
-    const item = arr.find(i => i.id === id);
-    if (item) item.nota = !item.nota;
-    saveLancamentos(arr);
-    renderAll();
-  }
+/* ============ USUÁRIO ============ */
+function pickUser(){
+ modal(`<h2>Quem está usando?</h2><p style="color:var(--mut);margin-bottom:14px;font-size:13.5px">Seu nome fica registrado nas movimentações.</p>${USERS.map(u=>`<button class="ubtn" onclick="setUser('${u}')">${u}</button>`).join('')}`);
+}
+function setUser(u){localStorage.setItem('sf_user',u);closeModal();refresh();toast('Olá, '+u+'!')}
 
-  function deletarItem(id) {
-    if (!confirm('Excluir este lançamento?')) return;
-    let arr = getLancamentos();
-    arr = arr.filter(i => i.id !== id);
-    saveLancamentos(arr);
-    renderAll();
-  }
-
-  function formatMoney(v) {
-    return 'R$ ' + v.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-  }
-
-  function renderRelatorio() {
-    const arr = getLancamentos();
-    const entradas = arr.filter(i => i.tipo === 'entrada').sort((a,b) => b.id - a.id);
-    const despesas = arr.filter(i => i.tipo === 'despesa').sort((a,b) => b.id - a.id);
-
-    const listaEntradas = document.getElementById('listaEntradas');
-    if (entradas.length === 0) {
-      listaEntradas.innerHTML = '<div class="empty">Nenhuma entrada ainda</div>';
-    } else {
-      listaEntradas.innerHTML = entradas.map(e => `
-        <div class="entry-item">
-          <div class="entry-left">
-            <span class="entry-value">${formatMoney(e.valor)}</span>
-            <span class="entry-sub">${e.clinica} · ${new Date(e.data+'T00:00').toLocaleDateString('pt-BR')}</span>
-          </div>
-          <div style="display:flex; align-items:center; gap:6px;">
-            <button class="nota-toggle ${e.nota ? 'ok' : ''}" onclick="toggleNota(${e.id})">${e.nota ? '✓ Nota emitida' : 'Sem nota'}</button>
-            <button class="delete-btn" onclick="deletarItem(${e.id})">✕</button>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    const listaDespesas = document.getElementById('listaDespesas');
-    if (despesas.length === 0) {
-      listaDespesas.innerHTML = '<div class="empty">Nenhuma despesa ainda</div>';
-    } else {
-      const porCategoria = {};
-      despesas.forEach(d => {
-        if (!porCategoria[d.categoria]) porCategoria[d.categoria] = [];
-        porCategoria[d.categoria].push(d);
-      });
-      listaDespesas.innerHTML = Object.keys(porCategoria).map(cat => {
-        const items = porCategoria[cat];
-        const total = items.reduce((s,i) => s + i.valor, 0);
-        return `
-          <div class="cat-group">
-            <div class="cat-title">${cat} <span class="cat-total">${formatMoney(total)}</span></div>
-            ${items.map(i => `
-              <div class="entry-item">
-                <div class="entry-left">
-                  <span class="entry-value">${formatMoney(i.valor)}</span>
-                  <span class="entry-sub">${new Date(i.data+'T00:00').toLocaleDateString('pt-BR')}</span>
-                </div>
-                <button class="delete-btn" onclick="deletarItem(${i.id})">✕</button>
-              </div>
-            `).join('')}
-          </div>
-        `;
-      }).join('');
-    }
-  }
-
-  function renderResumo() {
-    const arr = getLancamentos();
-    const totalEntradas = arr.filter(i => i.tipo === 'entrada').reduce((s,i) => s + i.valor, 0);
-    const totalDespesas = arr.filter(i => i.tipo === 'despesa').reduce((s,i) => s + i.valor, 0);
-    document.getElementById('totalEntradas').textContent = formatMoney(totalEntradas);
-    document.getElementById('totalDespesas').textContent = formatMoney(totalDespesas);
-    document.getElementById('saldo').textContent = formatMoney(totalEntradas - totalDespesas);
-  }
-
-  function salvarDas() {
-    const mes = document.getElementById('dasMes').value;
-    const valor = parseFloat(document.getElementById('dasValor').value);
-    if (!mes) { alert('Selecione o mês'); return; }
-    if (!valor || valor <= 0) { alert('Digite um valor válido'); return; }
-
-    let arr = getDas();
-    arr = arr.filter(d => d.mes !== mes);
-    arr.push({ id: Date.now(), mes, valor, pago: dasStatusAtual });
-    saveDasList(arr);
-
-    document.getElementById('dasValor').value = '';
-    alert('DAS salvo!');
-    renderDas();
-  }
-
-  function toggleDasPago(id) {
-    const arr = getDas();
-    const item = arr.find(i => i.id === id);
-    if (item) item.pago = !item.pago;
-    saveDasList(arr);
-    renderDas();
-  }
-
-  function deletarDas(id) {
-    if (!confirm('Excluir este registro de DAS?')) return;
-    let arr = getDas();
-    arr = arr.filter(i => i.id !== id);
-    saveDasList(arr);
-    renderDas();
-  }
-
-  function renderDas() {
-    const arr = getDas().sort((a,b) => b.mes.localeCompare(a.mes));
-    const lista = document.getElementById('listaDas');
-    if (arr.length === 0) {
-      lista.innerHTML = '<div class="empty">Nenhum registro ainda</div>';
-      return;
-    }
-    lista.innerHTML = arr.map(d => {
-      const [ano, mes] = d.mes.split('-');
-      const nomesMes = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-      const mesNome = nomesMes[parseInt(mes)-1] + '/' + ano;
-      return `
-        <div class="das-item">
-          <div class="entry-left">
-            <span class="entry-value">${mesNome}</span>
-            <span class="entry-sub">${formatMoney(d.valor)}</span>
-          </div>
-          <div style="display:flex; align-items:center; gap:6px;">
-            <button class="nota-toggle ${d.pago ? 'ok' : ''}" onclick="toggleDasPago(${d.id})">${d.pago ? '✓ Pago' : 'Pendente'}</button>
-            <button class="delete-btn" onclick="deletarDas(${d.id})">✕</button>
-          </div>
-        </div>
-      `;
-    }).join('');
-  }
-
-  function renderAll() {
-    renderRelatorio();
-    renderResumo();
-    renderDas();
-  }
-
-  function showTab(n) {
-    for (let i = 1; i <= 3; i++) {
-      document.getElementById('tab'+i).classList.toggle('active', i === n);
-      document.getElementById('tabBtn'+i).classList.toggle('active', i === n);
-    }
-    if (n === 2) renderRelatorio();
-    if (n === 3) { renderResumo(); renderDas(); }
-  }
-
-  renderAll();
+/* ============ INÍCIO ============ */
+buildNav();startSync();go('dashboard');
+if(!user())pickUser();
+if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
-
 </body>
 </html>
