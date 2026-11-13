@@ -127,6 +127,8 @@ input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blu
 .qv.z{background:var(--navy);color:#fff}.qv.low{background:var(--blue-soft);color:var(--blue)}
 .rk{margin:11px 0}.rk .n{font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rk .bar{margin:3px 0}.bar .t i.b{background:var(--navy)}
+.qi{width:78px;text-align:center;font-weight:800;border:1px solid var(--line);border-radius:9px;padding:6px 4px;background:#F3F6FB}
+.qi.z{background:var(--navy);color:#fff;border-color:var(--navy)}.qi.low{background:var(--blue-soft);color:var(--blue)}
 /* mobile */
 @media(max-width:900px){
  .side{display:none}.main{margin-left:0}
@@ -282,9 +284,6 @@ pg.dashboard={
   const sumC=t=>Object.values(tot[t]).reduce((a,b)=>a+b,0);
   const consMes=sumC('materiais')+sumC('componentes')+sumC('implantes');
   const kp=(t,l,dark)=>{const c2=t==='implantes'?UNICO:cl;return `<div class="card kpi ${dark?'dark':''}"><div class="l">${l}</div><div class="v">${sumStock(t,c2)}</div><div class="s">${Object.keys(S.cat[t]).length} cadastrados${c2.length>1?' • '+c2.map(c=>c.n+' '+sumStock(t,[c])).join(' • '):''}</div></div>`};
-  const ms=monthsBack(6);
-  const ser=ms.map(m=>{const f=k=>allMovs().filter(x=>x.clinica===k&&(x.data||'').startsWith(m)).reduce((s,x)=>s+movQ(x),0);return{m,e:f('esteio'),v:f('viamao')}});
-  const smx=Math.max(1,...ser.map(x=>Math.max(x.e,x.v)));
   const logs=Object.values(S.log).sort((a,b)=>b.ts-a.ts).slice(0,10);
   const empty=!Object.keys(S.cat.materiais).length;
   const opts=(sel,none)=>(none?`<option value="">${none}</option>`:'')+monthsBack(12).reverse().map(m=>`<option value="${m}" ${m===sel?'selected':''}>${mLbl(m)}</option>`).join('');
@@ -302,9 +301,7 @@ pg.dashboard={
    ${rankCard('Implantes mais consumidos','implantes',ck)}
    ${rankCard('Componentes mais consumidos','componentes',ck)}
   </div>
-  <div class="grid g2">
-   <div class="card"><h3>Consumo por clínica <span class="leg"><span><b style="background:var(--navy)"></b>Esteio</span><span><b style="background:var(--blue)"></b>Viamão</span></span></h3>
-    <div class="cols">${ser.map(x=>`<div class="col"><div class="pr"><i class="a" style="height:${x.e/smx*100}%" title="Esteio ${x.e}"></i><i class="b" style="height:${x.v/smx*100}%" title="Viamão ${x.v}"></i></div><span>${MN[+x.m.slice(5)-1]}</span></div>`).join('')}</div></div>
+  <div>
    <div class="card"><h3>Atividade recente</h3>${logs.length?`<ul class="feed">${logs.map(l=>`<li><span class="d"></span><div><b>${esc(l.user||'—')}</b> ${esc(l.txt)}<time>${fmtT(l.ts)}${l.clin?' • '+esc(cname(l.clin)):''}</time></div></li>`).join('')}</ul>`:'<div class="empty">Sem atividade ainda</div>'}</div>
   </div>`;
  }
@@ -312,6 +309,7 @@ pg.dashboard={
 
 /* ============ CONSUMO / MOVIMENTAÇÕES ============ */
 const OPS={materiais:[['entrada','Entrada'],['saida','Saída']],componentes:[['compra','Compra (entrada)'],['contagem','Contagem final do mês']],implantes:[['compra','Compra (entrada)'],['contagem','Contagem final do mês']]};
+const LOCAIS=[1,2,3,4,5,6].map(n=>'Consultório '+n);
 const OPN={entrada:'Entrada',saida:'Saída',compra:'Compra',contagem:'Contagem'};
 const TN={materiais:'Material',componentes:'Componente',implantes:'Implante'};
 pg.consumo={
@@ -325,6 +323,7 @@ pg.consumo={
    <div class="fld"><label>Data</label><input type="date" id="cData" value="${today}"></div>
    <div class="fld"><label id="cQL">Quantidade</label><input type="number" id="cQtd" min="0" value="1" inputmode="numeric"></div>
    <div class="fld"><label>Movimentação</label><select id="cOp" onchange="showEst()"></select></div>
+   <div class="fld" id="cLocW"><label>Local de destino</label><select id="cLoc"><option value="">Selecione…</option>${LOCAIS.map(l=>`<option>${l}</option>`).join('')}</select></div>
    <div class="fld"><label>Em estoque</label><input id="cEst" readonly value="—"></div>
    <div class="fld"><button class="btn blue" style="width:100%" onclick="regMov()">Registrar</button></div>
   </div><p id="cInfo" style="margin-top:12px;color:var(--mut);font-size:13.5px;min-height:18px"></p></div>
@@ -336,7 +335,7 @@ pg.consumo={
   if(!$('#cHist'))return;
   consSync(0);
   const cs=allMovs().filter(c=>S.clin==='todas'||c.clinica===S.clin||c.clinica==='geral').sort((a,b)=>(b.ts||0)-(a.ts||0)).slice(0,50);
-  $('#cHist').innerHTML=cs.length?`<div class="tw"><table class="tbl"><thead><tr><th>Data</th><th>Item</th><th>Clínica</th><th>Movimento</th><th>Qtd</th><th>Por</th><th></th></tr></thead><tbody>${cs.map(c=>`<tr><td>${fmtD(c.data)}</td><td><div class="nm">${esc(c.nome)}</div><div class="sub">${TN[c.tipo]||''}</div></td><td>${cname(c.clinica)}</td><td><span class="tag ${c.op==='saida'||c.op==='contagem'?'z':'l'}">${OPN[c.op]||c.op}</span>${c.op==='contagem'?`<div class="sub">consumo ${c.consumo||0}</div>`:''}</td><td><b>${c.qtd}</b></td><td>${esc(c.user||'')}</td><td><button class="btn ghost sm" onclick="undoMov('${c.id}',${c.legacy?1:0})">✕</button></td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">Nenhuma movimentação registrada</div>';
+  $('#cHist').innerHTML=cs.length?`<div class="tw"><table class="tbl"><thead><tr><th>Data</th><th>Item</th><th>Clínica</th><th>Movimento</th><th>Qtd</th><th>Por</th><th>Local</th><th></th></tr></thead><tbody>${cs.map(c=>`<tr><td>${fmtD(c.data)}</td><td><div class="nm">${esc(c.nome)}</div><div class="sub">${TN[c.tipo]||''}</div></td><td>${cname(c.clinica)}</td><td><span class="tag ${c.op==='saida'||c.op==='contagem'?'z':'l'}">${OPN[c.op]||c.op}</span>${c.op==='contagem'?`<div class="sub">consumo ${c.consumo||0}</div>`:''}</td><td><b>${c.qtd}</b></td><td>${esc(c.user||'')}</td><td>${esc(c.local||'—')}</td><td><button class="btn ghost sm" onclick="undoMov('${c.id}',${c.legacy?1:0})">✕</button></td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">Nenhuma movimentação registrada</div>';
  }
 };
 function consSync(reset){
@@ -353,6 +352,7 @@ function showEst(){
  const t=$('#cTipo').value,it=itemByName(t,$('#cMat').value),c=clinOf(t),op=$('#cOp').value,q=parseInt($('#cQtd').value);
  const cur=it?qty(t,c,it.id):null;
  $('#cEst').value=it?cur:'—';
+ $('#cLocW').style.display=op==='saida'?'':'none';
  $('#cQL').textContent=op==='contagem'?'Quantidade contada':'Quantidade';
  let msg='';
  if(op==='contagem')msg=it&&!isNaN(q)?`Estoque no sistema: ${cur} • contado: ${q} • consumo apurado no período: ${Math.max(0,cur-q)}. O estoque passa a ser ${q}.`:'Contagem final: o consumo é calculado pela diferença entre o estoque do sistema (última contagem + compras) e a quantidade contada.';
@@ -363,14 +363,17 @@ function regMov(){
  const t=$('#cTipo').value,op=$('#cOp').value,c=clinOf(t),d=$('#cData').value,q=parseInt($('#cQtd').value),it=itemByName(t,$('#cMat').value);
  if(!it)return toast('Escolha um item da lista',1);
  if(!d||isNaN(q)||q<0||(op!=='contagem'&&q<1))return toast('Informe data e quantidade',1);
+ const loc=op==='saida'?$('#cLoc').value:'';
+ if(op==='saida'&&!loc)return toast('Escolha o local (consultório)',1);
  let prev=0;
  R(`stock/${t}/${c}/${it.id}`).transaction(cur=>{cur=cur||0;prev=cur;if(op==='saida')return cur<q?undefined:cur-q;if(op==='contagem')return q;return cur+q},(err,ok)=>{
   if(err||!ok)return toast(`Estoque insuficiente (${qty(t,c,it.id)} un.)`,1);
   const m={tipo:t,op,clinica:c,itemId:it.id,nome:it.nome,qtd:q,data:d,user:user(),ts:Date.now()};
+  if(loc)m.local=loc;
   if(op==='contagem'){m.antes=prev;m.consumo=Math.max(0,prev-q)}
   R('movs').push(m);
-  logAct(c,op==='contagem'?`contou ${q}× ${it.nome} (consumo ${m.consumo})`:`${OPN[op].toLowerCase()} de ${q}× ${it.nome}`);
-  toast('Registrado ✓');$('#cQtd').value=op==='contagem'?0:1;$('#cMat').value='';showEst();
+  logAct(c,op==='contagem'?`contou ${q}× ${it.nome} (consumo ${m.consumo})`:`${OPN[op].toLowerCase()} de ${q}× ${it.nome}${loc?' → '+loc:''}`);
+  toast('Registrado ✓');$('#cLoc').value='';$('#cQtd').value=op==='contagem'?0:1;$('#cMat').value='';showEst();
  },false);
 }
 function undoMov(id,legacy){
@@ -401,7 +404,7 @@ function stockPage(t){return{
    if(S.filt==='zerados'&&!qs.some(v=>v<=0))return;
    if(S.filt==='baixos'&&!qs.some(v=>v>0&&v<=mn))return;
    if((it.grupo||'')!==g){g=it.grupo||'';if(g)h+=`<tr class="grp"><td colspan="${cl.length+2}">${esc(g)}</td></tr>`}
-   h+=`<tr><td><div class="nm">${esc(it.nome)}</div></td>${qs.map(v=>`<td class="num"><span class="qv ${v<=0?'z':v<=mn?'low':''}">${v}</span></td>`).join('')}<td><button class="btn ghost sm" onclick="itemModal('${t}','${it.id}')">✎</button></td></tr>`;
+   h+=`<tr><td><div class="nm">${esc(it.nome)}</div></td>${qs.map((v,i)=>`<td class="num">${t==='materiais'?`<span class="qv ${v<=0?'z':v<=mn?'low':''}">${v}</span>`:`<input class="qi ${v<=0?'z':v<=mn?'low':''}" type="number" min="0" inputmode="numeric" value="${v}" onfocus="this.select()" onchange="setQty('${t}','${cl[i].k}','${it.id}',this.value)">`}</td>`).join('')}<td><button class="btn ghost sm" onclick="itemModal('${t}','${it.id}')">✎</button></td></tr>`;
   });
   $('#sb').innerHTML=h||`<tr><td colspan="${cl.length+2}" class="empty">Nenhum item encontrado</td></tr>`;
  }
