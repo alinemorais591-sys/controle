@@ -105,6 +105,18 @@
   .modal-box{background:#fff;border-radius:14px;padding:24px;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;position:relative;box-shadow:0 20px 50px rgba(11,27,51,.3)}
   .modal-box h3{font-size:16px;margin-bottom:16px}
   .modal-close{position:absolute;top:10px;right:14px;background:none;border:none;font-size:26px;color:var(--muted);cursor:pointer}
+  .impl-add{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;margin-top:8px}
+  @media (max-width:820px){.impl-add{grid-template-columns:1fr 1fr}.impl-add .btn{grid-column:1/-1}}
+  .prev-box{background:#EEF5FF;border:1px solid #BFD9FF;border-radius:12px;padding:12px 14px;margin-bottom:14px}
+  .prev-title{font-size:12px;font-weight:700;color:#1D4ED8;margin-bottom:6px}
+  .prev-item{padding:8px 0;border-top:1px solid #D6E6FF}
+  .prev-item:first-of-type{border-top:0}
+  .prev-imps{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+  .prev-chk{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid #BFD9FF;border-radius:20px;padding:5px 12px;font-size:12px;font-weight:600;color:#1D4ED8;cursor:pointer}
+  .prev-chk.on{background:var(--marinho);border-color:var(--marinho);color:#fff}
+  .prev-chk input{width:auto;accent-color:#2563EB}
+  .perdido-linha{flex-basis:100%;font-size:12px;line-height:1.7;color:var(--muted)}
+  .perdido-linha b{color:var(--texto)}
   @media (max-width:820px){
     .container{grid-template-columns:1fr}
     .sidebar{position:sticky;top:0;height:auto;z-index:50}
@@ -170,7 +182,8 @@
           <div class="success-msg" id="msgSucesso"></div>
           <div class="error-msg" id="msgErro"></div>
           <form id="formulario">
-            <div class="form-group"><label>Nome completo *</label><input type="text" id="inputNome" required></div>
+            <div class="form-group"><label>Nome completo *</label><input type="text" id="inputNome" list="listaPacientes" autocomplete="off" required><datalist id="listaPacientes"></datalist></div>
+            <div class="prev-box" id="boxPrevReg" style="display:none"></div>
             <div class="form-group"><label>Data da cirurgia *</label><input type="date" id="inputData" required></div>
             <div class="form-group"><label>Clínica *</label><select id="inputClinica" required></select></div>
             <div class="form-group">
@@ -182,7 +195,12 @@
             <div class="form-group"><label>Carga imediata *</label><select id="inputCarga" required></select></div>
             <div class="form-group">
               <label>Implantes utilizados</label>
-              <div class="inline-add"><select id="selectImplanteReg"></select><button type="button" class="btn btn-small btn-submit" id="btnAddImplReg">Adicionar</button></div>
+              <div class="impl-add">
+                <select id="selectModeloReg"></select>
+                <select id="selectImplanteReg"></select>
+                <select id="selectRegiaoReg"></select>
+                <button type="button" class="btn btn-small btn-submit" id="btnAddImplReg">Adicionar</button>
+              </div>
               <div class="chips" id="chipsReg"></div>
               <div class="inline-add"><input type="text" id="novoTamanho" placeholder="Novo tamanho de implante (ex: 4 x 8,5)"><button type="button" class="btn btn-small btn-reset" id="btnNovoTamanho">Cadastrar tamanho</button></div>
             </div>
@@ -237,6 +255,7 @@
           <div class="metrics" style="margin-bottom:18px">
             <div class="metric-box"><div class="metric-number" id="totalImplantes">0</div><div class="metric-label">Total de implantes utilizados</div></div>
             <div class="metric-box"><div class="metric-number" id="totalCirMes">0</div><div class="metric-label">Cirurgias no mês</div></div>
+            <div class="metric-box"><div class="metric-number" id="totalPerdidosMes">0</div><div class="metric-label">Implantes perdidos</div></div>
           </div>
           <div class="chart-container"><canvas id="graficoConsumo"></canvas></div>
         </div>
@@ -284,19 +303,26 @@
     <form id="formEdicao">
       <div class="form-group"><label>Nome completo *</label><input type="text" id="editNome" required></div>
       <div class="form-group"><label>Data da cirurgia *</label><input type="date" id="editData" required></div>
+      <div class="prev-box" id="boxPrevEdit" style="display:none"></div>
       <div class="form-group"><label>Clínica *</label><select id="editClinica" required></select></div>
       <div class="form-group"><label>Procedimento *</label><select id="editProcedimento" required></select></div>
       <div class="form-group"><label>Tipo de cirurgia</label><select id="editTipo"></select></div>
       <div class="form-group"><label>Carga imediata</label><select id="editCarga"></select></div>
       <div class="form-group">
         <label>Implantes utilizados</label>
-        <div class="inline-add"><select id="editSelectImplante"></select><button type="button" class="btn btn-small btn-submit" id="btnAddImplEdit">Adicionar</button></div>
+        <div class="impl-add">
+          <select id="selectModeloEdit"></select>
+          <select id="editSelectImplante"></select>
+          <select id="selectRegiaoEdit"></select>
+          <button type="button" class="btn btn-small btn-submit" id="btnAddImplEdit">Adicionar</button>
+        </div>
         <div class="chips" id="chipsEdit"></div>
       </div>
       <div class="form-group"><label>Observações</label><textarea id="editObs"></textarea></div>
       <div class="btn-container">
         <button type="submit" class="btn btn-submit">Salvar</button>
         <button type="button" class="btn btn-reset" id="btnCancelarEdicao">Cancelar</button>
+        <button type="button" class="btn" id="btnExcluirPaciente" style="grid-column:1/-1;background:#FDECEC;color:#8A1D21;border:1px solid #F5C2C4">Excluir este registro</button>
       </div>
     </form>
   </div>
@@ -305,10 +331,25 @@
 <script>
   // ===== LISTAS PADRÃO (os itens extras são guardados no Firebase) =====
   const PROCEDIMENTOS_PADRAO = ['Levantamento de seio','Implante','Extração + Implante','Implante + Levantamento de seio + Exo','Enxerto','Enxerto + implante','Enxerto + Extração + Implante'];
-  const TAMANHOS_PADRAO = ['3,5 x 7','3,5 x 8','3,5 x 10','3,5 x 11,5','3,5 x 13','3,5 x 16','3,75 x 7','3,75 x 9','3,75 x 11','4 x 7','4 x 9','4,3 x 8','4,3 x 10','4,3 x 11,5','4,3 x 13'];
+  const TAMANHOS_PADRAO = ['3,5 x 7','3,5 x 8','3,5 x 10','3,5 x 11,5','3,5 x 13','3,5 x 15','3,5 x 16','3,8 x 10','3,8 x 11,5','3,75 x 7','3,75 x 9','4 x 7','4 x 9','4,3 x 8','4,3 x 10'];
   const CLINICAS = ['Viamão','Esteio'];
   const TIPOS = ['Normal','Perda','Repetição'];
   const CARGAS = ['Com carga imediata','Sem carga imediata'];
+  // Modelos de implante e regiões (numeração FDI)
+  const MODELOS = ['GO Direct','Hybridus','Extra longo','Zigomático'];
+  const TAM_EXTRA = ['18 x 3,8','20 x 3,8','22 x 3,8','22,5 x 4,0','24 x 3,8'];
+  const TAM_ZIGO = ['4 x 35','4 x 37,5','4 x 40,0','4 x 45,0','4 x 47,5'];
+  const DENTES_SUP = ['18','17','16','15','14','13','12','11','21','22','23','24','25','26','27','28'];
+  const DENTES_INF = ['48','47','46','45','44','43','42','41','31','32','33','34','35','36','37','38'];
+  // Cada implante é guardado como texto: "Modelo · Tamanho" ou "Modelo · Tamanho @ Dente"
+  const SEP = ' · ', SEPR = ' @ ';
+  const modeloDe = s => String(s).split(SEPR)[0];            // "GO Direct · 3,5 x 10" (sem a região; usado no consumo)
+  const regiaoDe = s => String(s).split(SEPR)[1] || '';
+  const tamanhoDe = s => { const m = modeloDe(s); const i = m.indexOf(SEP); return i < 0 ? m : m.slice(i + SEP.length); };
+  const fmtImp = s => regiaoDe(s) ? `${modeloDe(s)} — dente ${regiaoDe(s)}` : modeloDe(s);
+  const regiaoOptions = () => '<option value="">Região (dente)</option>' +
+    `<optgroup label="Superior">${DENTES_SUP.map(d => `<option value="${d}">Dente ${d}</option>`).join('')}</optgroup>` +
+    `<optgroup label="Inferior">${DENTES_INF.map(d => `<option value="${d}">Dente ${d}</option>`).join('')}</optgroup>`;
 
   // ===== ESTADO =====
   let cirurgias = [];
@@ -323,6 +364,8 @@
   let implantesReg = [];
   let implantesEdit = [];
   let editandoId = null;
+  let perdidosReg = [];     // implantes perdidos marcados no registro novo
+  let perdidosEdit = [];    // idem, na edição
   let graficos = {};
   let selectsProntos = false;
 
@@ -362,7 +405,22 @@
   const procedimentoOf = c => c.procedimento || 'Não informado';
   const implantesOf = c => Array.isArray(c.implantes) ? c.implantes : [];
   const procs = () => unico([...PROCEDIMENTOS_PADRAO, ...procedimentos, ...cirurgias.map(c => c.procedimento)]);
-  const sizes = () => unico([...TAMANHOS_PADRAO, ...tamanhos, ...cirurgias.flatMap(implantesOf)]);
+  // Tamanhos "padrão" (GO Direct / Hybridus e registros antigos sem modelo)
+  // O menu mostra só os tamanhos da lista oficial (mais os que você cadastrar pelo botão "Cadastrar tamanho")
+  const sizes = () => unico([...TAMANHOS_PADRAO, ...tamanhos]);
+  const tamanhosDoModelo = m => !m ? [] : m === 'Extra longo' ? TAM_EXTRA : m === 'Zigomático' ? TAM_ZIGO : sizes();
+  const grupoDoTamanho = t => TAM_EXTRA.includes(t) ? 'Extra longo' : TAM_ZIGO.includes(t) ? 'Zigomático' : 'padrao';
+  // Sem modelo escolhido, o menu de tamanho já abre com todos, agrupados por modelo
+  function fillTamanhos(el, modelo) {
+    const atual = el.value;
+    if (modelo) { renderSelect(el, tamanhosDoModelo(modelo), 'Tamanho', atual); return; }
+    const opt = l => l.map(t => `<option value="${esc(t)}">${esc(t)}</option>`).join('');
+    el.innerHTML = '<option value="">Tamanho</option>' +
+      `<optgroup label="GO Direct / Hybridus">${opt(sizes())}</optgroup>` +
+      `<optgroup label="Extra longo">${opt(TAM_EXTRA)}</optgroup>` +
+      `<optgroup label="Zigomático">${opt(TAM_ZIGO)}</optgroup>`;
+    if (atual) el.value = atual;
+  }
 
   function renderSelect(el, items, placeholder, selecionado) {
     const atual = selecionado !== undefined ? selecionado : el.value;
@@ -419,16 +477,64 @@
     renderSelect($('inputProcedimento'), procs(), 'Selecione o procedimento');
     renderSelect($('inputTipo'), TIPOS, 'Selecione o tipo');
     renderSelect($('inputCarga'), CARGAS, 'Selecione a carga');
-    renderSelect($('selectImplanteReg'), sizes(), 'Selecione o tamanho');
+    renderSelect($('selectModeloReg'), MODELOS, 'Modelo');
+    fillTamanhos($('selectImplanteReg'), $('selectModeloReg').value);
+    if (!$('selectRegiaoReg').options.length) $('selectRegiaoReg').innerHTML = regiaoOptions();
   }
 
   function renderChips(lista, containerId, attr) {
     $(containerId).innerHTML = lista.map((s, i) =>
-      `<span class="chip">${esc(s)}<button type="button" ${attr}="${i}" aria-label="Remover">&times;</button></span>`
+      `<span class="chip">${esc(fmtImp(s))}<button type="button" ${attr}="${i}" aria-label="Remover">&times;</button></span>`
     ).join('');
   }
   const renderChipsReg = () => renderChips(implantesReg, 'chipsReg', 'data-rm-reg');
   const renderChipsEdit = () => renderChips(implantesEdit, 'chipsEdit', 'data-rm-edit');
+
+  // ===== IMPLANTES PERDIDOS (ligados ao histórico do paciente) =====
+  // O implante perdido fica registrado na cirurgia NOVA como informação; só "implantes" conta no consumo.
+  const chaveNome = n => norm(n).replace(/\s+/g, ' ').trim();
+  function anterioresDe(nome, ateData, excluirId) {
+    const k = chaveNome(nome);
+    if (!k) return [];
+    return cirurgias.filter(c => String(c.id) !== String(excluirId) && chaveNome(c.nome) === k &&
+        implantesOf(c).length && (!ateData || (c.data || '') <= ateData))
+      .sort((a, b) => (b.data || '').localeCompare(a.data || ''));
+  }
+  function renderPrevBox(boxId, sel, nome, data, excluirId) {
+    const box = $(boxId);
+    const ant = anterioresDe(nome, data, excluirId);
+    if (!ant.length) { box.style.display = 'none'; box.innerHTML = ''; return; }
+    box.style.display = '';
+    box.innerHTML = '<div class="prev-title">Este paciente já tem cirurgia anterior. Marque o implante que foi PERDIDO (não conta no consumo):</div>' +
+      ant.map(c => `<div class="prev-item">
+        <div class="sub"><b>${fmtData(c.data)}</b> · ${esc(procedimentoOf(c))} · ${esc(clinicaOf(c))}</div>
+        <div class="prev-imps">${implantesOf(c).map((m, i) => {
+          const on = sel.some(s => String(s.idOrigem) === String(c.id) && s.idx === i);
+          return `<label class="prev-chk ${on ? 'on' : ''}"><input type="checkbox" data-perd="${boxId}" data-id="${esc(c.id)}" data-i="${i}" data-m="${esc(m)}" ${on ? 'checked' : ''}> ${esc(fmtImp(m))} · perdido</label>`;
+        }).join('')}</div></div>`).join('');
+  }
+  const atualizaPrevReg = () => renderPrevBox('boxPrevReg', perdidosReg, $('inputNome').value, $('inputData').value, null);
+  const atualizaPrevEdit = () => renderPrevBox('boxPrevEdit', perdidosEdit, $('editNome').value, $('editData').value, editandoId);
+  function perdidosFmt(lista) {
+    return lista.map(p => `${esc(fmtImp(p.modelo))}${p.dataOrigem ? ' (cirurgia de ' + fmtData(p.dataOrigem) + ')' : ''}`).join(' + ');
+  }
+  // Na cirurgia antiga: quais implantes dela foram perdidos e em que nova cirurgia foram substituídos
+  function substituicoesDe(c) {
+    return cirurgias.flatMap(x => (Array.isArray(x.perdidos) ? x.perdidos : [])
+      .filter(p => String(p.idOrigem) === String(c.id)).map(p => ({ modelo: p.modelo, novaData: x.data })));
+  }
+  document.addEventListener('change', e => {
+    const t = e.target;
+    if (!t.matches || !t.matches('[data-perd]')) return;
+    const arr = t.getAttribute('data-perd') === 'boxPrevReg' ? perdidosReg : perdidosEdit;
+    const idOrigem = t.getAttribute('data-id'), idx = +t.getAttribute('data-i');
+    const pos = arr.findIndex(s => String(s.idOrigem) === idOrigem && s.idx === idx);
+    if (t.checked && pos < 0) {
+      const orig = cirurgias.find(c => String(c.id) === idOrigem) || {};
+      arr.push({ idOrigem, idx, modelo: t.getAttribute('data-m'), dataOrigem: orig.data || '' });
+    } else if (!t.checked && pos >= 0) arr.splice(pos, 1);
+    t.parentElement.classList.toggle('on', t.checked);
+  });
 
   // ===== REGISTRAR =====
   $('formulario').addEventListener('submit', e => {
@@ -442,6 +548,7 @@
       tipo: $('inputTipo').value,
       carga: $('inputCarga').value,
       implantes: [...implantesReg],
+      perdidos: perdidosReg.map(p => ({ ...p })),
       obs: $('inputObs').value.trim(),
       timestamp: new Date().toISOString()
     };
@@ -453,17 +560,31 @@
     salvarDados();
     e.target.reset();
     implantesReg = [];
+    perdidosReg = [];
+    atualizaPrevReg();
     renderChipsReg();
     showMsg('msgSucesso', 'Cirurgia registrada com sucesso.');
   });
-  $('formulario').addEventListener('reset', () => setTimeout(() => { implantesReg = []; renderChipsReg(); }, 0));
+  $('formulario').addEventListener('reset', () => setTimeout(() => { implantesReg = []; perdidosReg = []; atualizaPrevReg(); renderChipsReg(); fillTamanhos($('selectImplanteReg'), ''); }, 0));
+  $('inputNome').addEventListener('input', () => { perdidosReg = []; atualizaPrevReg(); });
+  $('inputData').addEventListener('change', atualizaPrevReg);
 
   $('btnAddImplReg').addEventListener('click', () => {
-    const v = $('selectImplanteReg').value;
-    if (!v) return;
-    implantesReg.push(v);
+    const t = $('selectImplanteReg').value, r = $('selectRegiaoReg').value;
+    const g = grupoDoTamanho(t), m = $('selectModeloReg').value || (g !== 'padrao' ? g : '');
+    if (!t) { showMsg('msgErro', 'Escolha o tamanho do implante.'); return; }
+    if (!m) { showMsg('msgErro', 'Escolha o modelo (GO Direct ou Hybridus).'); return; }
+    implantesReg.push(m + SEP + t + (r ? SEPR + r : ''));
     $('selectImplanteReg').value = '';
+    $('selectRegiaoReg').value = '';
     renderChipsReg();
+    atualizaPrevReg();
+  });
+  $('selectModeloReg').addEventListener('change', () => fillTamanhos($('selectImplanteReg'), $('selectModeloReg').value));
+  // Escolher um tamanho de Extra longo ou Zigomático já seleciona o modelo
+  $('selectImplanteReg').addEventListener('change', () => {
+    const g = grupoDoTamanho($('selectImplanteReg').value);
+    if (g !== 'padrao' && !$('selectModeloReg').value) $('selectModeloReg').value = g;
   });
 
   $('btnNovoTamanho').addEventListener('click', () => {
@@ -524,6 +645,18 @@
   };
   const RESUMO_NOMES = { total: 'Todas as cirurgias', comCarga: 'Com carga imediata', semCarga: 'Sem carga imediata', perda: 'Perdas', rep: 'Repetições', semCargaDef: 'Sem carga informada', semClinica: 'Sem clínica definida' };
 
+  // Linhas de implantes: novo (conta no consumo) e perdido (só histórico)
+  function linhaImplantes(c, destacarPerda) {
+    const imps = implantesOf(c).length ? implantesOf(c).map(m => esc(fmtImp(m))).join(' + ') : 'Nenhum informado';
+    const pd = Array.isArray(c.perdidos) ? c.perdidos : [];
+    const subs = substituicoesDe(c);
+    let h = `<div class="perdido-linha"><b>${destacarPerda || pd.length ? 'Implante novo:' : 'Implantes:'}</b> ${imps}`;
+    if (pd.length) h += `<br><b>Implante perdido:</b> ${perdidosFmt(pd)} <i>(não conta no consumo)</i>`;
+    else if (destacarPerda) h += `<br><b>Implante perdido:</b> modelo não informado — clique em Editar para marcar`;
+    if (subs.length) h += `<br><b>Perdido depois:</b> ${subs.map(s => `${esc(fmtImp(s.modelo))} (substituído na cirurgia de ${fmtData(s.novaData)})`).join(' + ')}`;
+    return h + '</div>';
+  }
+
   function renderListaProcedimento(lista) {
     let pacientes = null, titulo = 'Pacientes', mostrarProc = false;
     if (resumoAtual) {
@@ -540,13 +673,26 @@
     }
     pacientes.sort((a, b) => (b.data || '').localeCompare(a.data || ''));
     $('tituloListaProc').textContent = `${titulo} · ${pacientes.length} paciente(s)`;
-    $('listaProcedimento').innerHTML = pacientes.map(c => {
+    let resumoImpl = '';
+    if (resumoAtual === 'perda') {
+      const cont = {};
+      let semInfo = 0;
+      pacientes.forEach(c => {
+        const pd = Array.isArray(c.perdidos) ? c.perdidos : [];
+        if (!pd.length) semInfo++;
+        pd.forEach(p => { const k = modeloDe(p.modelo); cont[k] = (cont[k] || 0) + 1; });
+      });
+      const ks = Object.keys(cont).sort((a, b) => cont[b] - cont[a]);
+      resumoImpl = `<div class="row-item" style="background:#EEF5FF;border-color:#BFD9FF"><span><b>Modelos de implantes perdidos</b></span><span class="sub">${ks.length ? ks.map(k => `${esc(k)} <b>(${cont[k]})</b>`).join(' · ') : 'Nenhum modelo informado ainda'}${semInfo ? ` · <b>${semInfo}</b> sem modelo informado` : ''}</span></div>`;
+    }
+    $('listaProcedimento').innerHTML = resumoImpl + pacientes.map(c => {
       const carga = cargaOf(c) === 'Com carga imediata' ? 'Com carga' : cargaOf(c) === 'Sem carga imediata' ? 'Sem carga' : '—';
       const extra = mostrarProc ? ` · ${esc(procedimentoOf(c))}` : '';
       return `<div class="row-item">
         <div><b>${esc(c.nome)}</b><div class="sub">${fmtData(c.data)} · ${esc(clinicaOf(c))}${extra}</div></div>
         <div class="sub">${esc(tipoOf(c))} · ${carga}</div>
         <button type="button" class="btn btn-small btn-edit" data-edit="${esc(c.id)}">Editar</button>
+        ${linhaImplantes(c, resumoAtual === 'perda')}
       </div>`;
     }).join('') || '<div class="empty-state">Nenhum paciente nesta seleção.</div>';
   }
@@ -579,7 +725,7 @@
           <span class="badge">${esc(tipoOf(c))}</span>
           <span class="badge carga">${esc(cargaOf(c))}</span>
         </div>
-        <div class="patient-detail"><b>Implantes:</b> ${imps.length ? imps.map(esc).join(' + ') : 'Nenhum'}</div>
+        <div class="patient-detail">${linhaImplantes(c, false)}</div>
         ${c.obs ? `<div class="patient-detail"><b>Observações:</b> ${esc(c.obs)}</div>` : ''}
       </div>`;
     }).join('');
@@ -595,11 +741,15 @@
     renderSelect($('editProcedimento'), procs(), 'Selecione o procedimento', c.procedimento || '');
     renderSelect($('editTipo'), TIPOS, 'Selecione o tipo', tipoOf(c));
     renderSelect($('editCarga'), CARGAS, 'Selecione a carga', cargaOf(c) === 'Não informado' ? '' : cargaOf(c));
-    renderSelect($('editSelectImplante'), sizes(), 'Selecione o tamanho', '');
+    renderSelect($('selectModeloEdit'), MODELOS, 'Modelo', '');
+    fillTamanhos($('editSelectImplante'), '');
+    $('selectRegiaoEdit').innerHTML = regiaoOptions();
     $('editNome').value = c.nome || '';
     $('editData').value = c.data || '';
     $('editObs').value = c.obs || '';
     renderChipsEdit();
+    perdidosEdit = Array.isArray(c.perdidos) ? c.perdidos.map(p => ({ ...p })) : [];
+    atualizaPrevEdit();
     $('modalEdicao').classList.add('active');
   }
 
@@ -607,17 +757,35 @@
     $('modalEdicao').classList.remove('active');
     editandoId = null;
     implantesEdit = [];
+    perdidosEdit = [];
   }
 
   $('btnAddImplEdit').addEventListener('click', () => {
-    const v = $('editSelectImplante').value;
-    if (!v) return;
-    implantesEdit.push(v);
+    const t = $('editSelectImplante').value, r = $('selectRegiaoEdit').value;
+    const g = grupoDoTamanho(t), m = $('selectModeloEdit').value || (g !== 'padrao' ? g : '');
+    if (!t) { alert('Escolha o tamanho do implante.'); return; }
+    if (!m) { alert('Escolha o modelo (GO Direct ou Hybridus).'); return; }
+    implantesEdit.push(m + SEP + t + (r ? SEPR + r : ''));
     $('editSelectImplante').value = '';
+    $('selectRegiaoEdit').value = '';
     renderChipsEdit();
+  });
+  $('selectModeloEdit').addEventListener('change', () => fillTamanhos($('editSelectImplante'), $('selectModeloEdit').value));
+  $('editSelectImplante').addEventListener('change', () => {
+    const g = grupoDoTamanho($('editSelectImplante').value);
+    if (g !== 'padrao' && !$('selectModeloEdit').value) $('selectModeloEdit').value = g;
   });
   $('btnFecharModal').addEventListener('click', fecharModal);
   $('btnCancelarEdicao').addEventListener('click', fecharModal);
+  $('btnExcluirPaciente').addEventListener('click', () => {
+    const c = cirurgias.find(x => String(x.id) === String(editandoId));
+    if (!c) return;
+    if (!confirm(`Excluir o registro de "${c.nome}" (${fmtData(c.data)})? Esta ação não pode ser desfeita.`)) return;
+    cirurgias = cirurgias.filter(x => String(x.id) !== String(editandoId));
+    salvarDados();
+    fecharModal();
+    renderTudo();
+  });
   $('modalEdicao').addEventListener('click', e => { if (e.target === $('modalEdicao')) fecharModal(); });
 
   $('formEdicao').addEventListener('submit', e => {
@@ -634,6 +802,7 @@
       tipo: $('editTipo').value || tipoOf(antigo),
       carga: $('editCarga').value || (cargaOf(antigo) === 'Não informado' ? '' : cargaOf(antigo)),
       implantes: [...implantesEdit],
+      perdidos: perdidosEdit.map(p => ({ ...p })),
       obs: $('editObs').value.trim()
     });
     salvarDados();
@@ -648,9 +817,25 @@
     const lista = filtrar(mes);
     const consumo = {};
     let total = 0;
-    lista.forEach(c => implantesOf(c).forEach(i => { consumo[i] = (consumo[i] || 0) + 1; total++; }));
+    lista.forEach(c => implantesOf(c).forEach(i => { const k = modeloDe(i); consumo[k] = (consumo[k] || 0) + 1; total++; }));
     $('totalImplantes').textContent = total;
     $('totalCirMes').textContent = lista.length;
+
+    // Implantes perdidos no período (marcados nas cirurgias do mês; não entram no consumo)
+    const perd = {};
+    let totalPerd = 0, perdaSemModelo = 0;
+    lista.forEach(c => {
+      const pd = Array.isArray(c.perdidos) ? c.perdidos : [];
+      pd.forEach(p => { const k = modeloDe(p.modelo); perd[k] = (perd[k] || 0) + 1; totalPerd++; });
+      if (!pd.length && tipoOf(c) === 'Perda') perdaSemModelo++;
+    });
+    $('totalPerdidosMes').textContent = totalPerd;
+    const perdKeys = Object.keys(perd).sort((a, b) => perd[b] - perd[a]);
+    const blocoPerd = `<div style="margin:20px 0 10px;font-size:15px;font-weight:700">Implantes perdidos no mês · total: ${totalPerd}</div>` +
+      (perdKeys.length
+        ? perdKeys.map(m => `<div class="row-item"><span><b>${esc(m)}</b></span><span class="qty">${perd[m]} perdido(s)</span></div>`).join('')
+        : '<div class="empty-state">Nenhum implante perdido com tamanho informado neste período.</div>') +
+      (perdaSemModelo ? `<div class="hint">${perdaSemModelo} cirurgia(s) de Perda sem o implante perdido informado. Use Editar no paciente para marcar.</div>` : '');
 
     const modelos = Object.keys(consumo).sort((a, b) => consumo[b] - consumo[a]);
 
@@ -664,9 +849,9 @@
       });
     }
 
-    $('relatorioConsumo').innerHTML = modelos.map(m =>
+    $('relatorioConsumo').innerHTML = (modelos.map(m =>
       `<div class="row-item"><span><b>${esc(m)}</b></span><span class="qty">${consumo[m]} utilizado(s)</span></div>`
-    ).join('') || '<div class="empty-state">Nenhum implante utilizado neste período.</div>';
+    ).join('') || '<div class="empty-state">Nenhum implante utilizado neste período.</div>') + blocoPerd;
 
     $('sugestaoCompra').innerHTML = modelos.map(m =>
       `<div class="row-item"><span><b>${esc(m)}</b></span>
@@ -687,7 +872,7 @@
   $('btnExportarSugestao').addEventListener('click', () => {
     const lista = filtrar($('filtroMes').value);
     const consumo = {};
-    lista.forEach(c => implantesOf(c).forEach(i => { consumo[i] = (consumo[i] || 0) + 1; }));
+    lista.forEach(c => implantesOf(c).forEach(i => { const k = modeloDe(i); consumo[k] = (consumo[k] || 0) + 1; }));
     const dados = Object.keys(consumo).map(m => ({
       'Implante': m, 'Utilizados no mês': consumo[m], 'Sugestão de compra': sugestaoDe(m, consumo[m])
     }));
@@ -701,7 +886,7 @@
     if (!cirurgias.length) { alert('Nenhuma cirurgia para exportar.'); return; }
     const dados = cirurgias.map(c => ({
       Nome: c.nome, Data: fmtData(c.data), Clínica: clinicaOf(c), Procedimento: procedimentoOf(c),
-      Tipo: tipoOf(c), 'Carga imediata': cargaOf(c), Implantes: implantesOf(c).join(', '), Observações: c.obs || ''
+      Tipo: tipoOf(c), 'Carga imediata': cargaOf(c), Implantes: implantesOf(c).map(fmtImp).join(', '), 'Implantes perdidos': (Array.isArray(c.perdidos) ? c.perdidos : []).map(p => fmtImp(p.modelo)).join(', '), Observações: c.obs || ''
     }));
     const livro = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(livro, XLSX.utils.json_to_sheet(dados), 'Cirurgias');
@@ -746,7 +931,13 @@
     if (re) { implantesEdit.splice(+re.getAttribute('data-rm-edit'), 1); renderChipsEdit(); }
   });
 
+  $('editNome').addEventListener('input', atualizaPrevEdit);
+  $('editData').addEventListener('change', atualizaPrevEdit);
+
   function renderTudo() {
+    const dl = $('listaPacientes');
+    if (dl) dl.innerHTML = unico(cirurgias.map(c => (c.nome || '').trim())).sort((a, b) => a.localeCompare(b, 'pt')).map(n => `<option value="${esc(n)}">`).join('');
+    atualizaPrevReg();
     renderDashboard();
     renderPacientes();
     renderRelatorio();
